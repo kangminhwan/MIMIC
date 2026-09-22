@@ -1,4 +1,5 @@
 using System.Net;
+using System.Buffers.Binary;
 using System.Net.Sockets;
 using Google.Protobuf;
 using Mimic.Network;
@@ -77,14 +78,38 @@ using (var raw = new TcpClient())
     await raw.ConnectAsync(portal.TableHost, (int)portal.TablePort);
     var stream = raw.GetStream();
     var frame = new Envelope { ProtocolVersion = 99, RequestId = 1, Ping = new Empty() }.ToByteArray();
-    var prefix = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(frame.Length));
+    var prefix = new byte[24];
+    BinaryPrimitives.WriteUInt32LittleEndian(prefix.AsSpan(0), 0x6B2E);
+    BinaryPrimitives.WriteUInt32LittleEndian(prefix.AsSpan(8), 1);
+    BinaryPrimitives.WriteUInt32LittleEndian(prefix.AsSpan(12), 20);
+    BinaryPrimitives.WriteUInt32LittleEndian(prefix.AsSpan(16), (uint)frame.Length);
+    for (int i = 0; i < frame.Length; i++) frame[i] ^= 0xA7;
     foreach (var octet in prefix.Concat(frame)) await stream.WriteAsync(new[] { octet });
-    var header = new byte[4];using var timeout = new CancellationTokenSource(5000);
+    var header = new byte[24];using var timeout = new CancellationTokenSource(5000);
     await stream.ReadExactlyAsync(header, timeout.Token);
-    int length = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(header));var bytes = new byte[length];await stream.ReadExactlyAsync(bytes, timeout.Token);
-    Check(Envelope.Parser.ParseFrom(bytes).Error != null, "Fragmented framing and version rejection");
-    await stream.WriteAsync(new byte[] { 0x7f, 0xff, 0xff, 0xff });
+    Check(BinaryPrimitives.ReadUInt32LittleEndian(header) == 0x6B2E, "Legacy header magic");
+    int length = (int)BinaryPrimitives.ReadUInt32LittleEndian(header.AsSpan(16));
+    var bytes = new byte[length];await stream.ReadExactlyAsync(bytes, timeout.Token);
+    for (int i = 0; i < bytes.Length; i++) bytes[i] ^= 0xA7;
+    Check(Envelope.Parser.ParseFrom(bytes).Error != null, "Legacy fragmented framing and version rejection");
+    BinaryPrimitives.WriteUInt32LittleEndian(prefix.AsSpan(16), 0x7FFFFFFF);
+    await stream.WriteAsync(prefix);
     try { Check(await stream.ReadAsync(header, timeout.Token) == 0, "Oversized frames close connection"); }
     catch (IOException) { Check(true, "Oversized frames reset connection"); }
+}
+foreach (string kind in new[] { "magic", "nonce", "command" })
+{
+    using var raw = new TcpClient(); await raw.ConnectAsync(portal.TableHost, (int)portal.TablePort);
+    var message = new Envelope { ProtocolVersion = 1, RequestId = 1, Ping = new Empty() }.ToByteArray();
+    var header = new byte[24];
+    BinaryPrimitives.WriteUInt32LittleEndian(header, kind == "magic" ? 0U : 0x6B2EU);
+    BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(8), kind == "nonce" ? 9U : 1U);
+    BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(12), kind == "command" ? 999U : 20U);
+    BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(16), (uint)message.Length);
+    for (int i = 0; i < message.Length; i++) message[i] ^= 0xA7;
+    var stream = raw.GetStream(); await stream.WriteAsync(header.Concat(message).ToArray());
+    using var timeout = new CancellationTokenSource(5000);
+    try { Check(await stream.ReadAsync(header, timeout.Token) == 0, "Invalid legacy " + kind + " closes connection"); }
+    catch (IOException) { Check(true, "Invalid legacy " + kind + " resets connection"); }
 }
 Console.WriteLine("MIMIC integration smoke passed.");

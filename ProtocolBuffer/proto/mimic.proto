@@ -5,7 +5,10 @@ option csharp_namespace = "Mimic.Protocol";
 message Empty {}
 message PortalReply { string product = 1; string platform_url = 2; string table_host = 3; uint32 table_port = 4; uint32 protocol_version = 5; }
 message LoginRequest { string display_name = 1; }
-message LoginReply { string session_token = 1; string player_id = 2; string display_name = 3; int64 expires_unix = 4; }
+message LoginReply { string session_token = 1; string player_id = 2; string display_name = 3; int64 expires_unix = 4; string account_name = 5; int64 demo_chips = 6; }
+message RegisterRequest { string account_name = 1; string password = 2; string display_name = 3; }
+message AccountLoginRequest { string account_name = 1; string password = 2; }
+message ProfileReply { string player_id = 1; string account_name = 2; string display_name = 3; int64 demo_chips = 4; int64 created_unix = 5; }
 message ValidateSessionRequest { string session_token = 1; }
 message SessionReply { string player_id = 1; string display_name = 2; }
 message AuthenticateRequest { string session_token = 1; }

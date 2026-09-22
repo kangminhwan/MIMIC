@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mimic.Protocol", "..\Protoc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mimic.Smoke", "..\tests\Smoke\Mimic.Smoke.csproj", "{E798D502-DAAA-4EE1-AB49-0C6CB0641A76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mimic.AccountTests", "..\tests\AccountTests\Mimic.AccountTests.csproj", "{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,18 @@ Global
 		{E798D502-DAAA-4EE1-AB49-0C6CB0641A76}.Release|x64.Build.0 = Release|Any CPU
 		{E798D502-DAAA-4EE1-AB49-0C6CB0641A76}.Release|x86.ActiveCfg = Release|Any CPU
 		{E798D502-DAAA-4EE1-AB49-0C6CB0641A76}.Release|x86.Build.0 = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|x64.Build.0 = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Debug|x86.Build.0 = Debug|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|x64.ActiveCfg = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|x64.Build.0 = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A61EB98C-D773-4A9F-A3B1-74F09C4AB67D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -19,3 +19,8 @@ Client/*.csproj
 Client/*.sln
 Client/*.slnx
 Client/.vsconfig
+
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/DataStore/
