@@ -1,0 +1,35 @@
+name: framework
+on: [push, pull_request]
+jobs:
+  server-and-protocol:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install pinned C++ Protobuf toolchain
+        shell: pwsh
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP/vcpkg"
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg clone failed' }
+          git -C "$env:RUNNER_TEMP/vcpkg" checkout e21c414460498b0c7c94d815ad6d1a3d313ff28b
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg checkout failed' }
+          & "$env:RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat" -disableMetrics
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap failed' }
+          & "$env:RUNNER_TEMP/vcpkg/vcpkg.exe" install protobuf:x64-windows
+          if ($LASTEXITCODE -ne 0) { throw 'protobuf install failed' }
+      - name: Build and test C++/C#
+        shell: pwsh
+        run: ./Scripts/Build.ps1 -VcpkgRoot "$env:RUNNER_TEMP/vcpkg"
+      - name: Verify generated protocol is current
+        run: git diff --exit-code -- Client/Assets/_DEV/_Scripts/Network/Generated/Mimic.cs
+      - name: Cross-language network smoke
+        shell: pwsh
+        run: ./Scripts/Test-Smoke.ps1
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-logs
+          path: artifacts/*.log

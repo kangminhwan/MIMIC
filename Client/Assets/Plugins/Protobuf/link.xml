@@ -1,0 +1,1 @@
+<linker><assembly fullname="Google.Protobuf" preserve="all"/><assembly fullname="Mimic.Client" preserve="all"/></linker>

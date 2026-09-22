@@ -1,0 +1,42 @@
+syntax = "proto3";
+package mimic.protocol;
+option csharp_namespace = "Mimic.Protocol";
+
+message Empty {}
+message PortalReply { string product = 1; string platform_url = 2; string table_host = 3; uint32 table_port = 4; uint32 protocol_version = 5; }
+message LoginRequest { string display_name = 1; }
+message LoginReply { string session_token = 1; string player_id = 2; string display_name = 3; int64 expires_unix = 4; }
+message ValidateSessionRequest { string session_token = 1; }
+message SessionReply { string player_id = 1; string display_name = 2; }
+message AuthenticateRequest { string session_token = 1; }
+message AuthenticateReply { string player_id = 1; string display_name = 2; }
+message JoinTableRequest { uint32 table_id = 1; }
+message ReadyRequest { bool ready = 1; }
+message ActionRequest { uint64 hand_id = 1; uint64 revision = 2; ActionKind kind = 3; int64 raise_to = 4; }
+message ErrorReply { string code = 1; string message = 2; }
+message TableInfo { uint32 table_id = 1; string name = 2; uint32 players = 3; uint32 capacity = 4; int64 small_blind = 5; int64 big_blind = 6; }
+message LobbyReply { repeated TableInfo tables = 1; }
+message Card { uint32 rank = 1; uint32 suit = 2; }
+enum Street { WAITING = 0; PREFLOP = 1; FLOP = 2; TURN = 3; RIVER = 4; COMPLETE = 5; }
+enum ActionKind { ACTION_UNSPECIFIED = 0; FOLD = 1; CHECK = 2; CALL = 3; RAISE = 4; }
+message PlayerState { string player_id = 1; string display_name = 2; uint32 seat = 3; int64 chips = 4; int64 street_bet = 5; bool folded = 6; bool ready = 7; bool connected = 8; repeated Card hole_cards = 9; int64 committed = 10; }
+message TableSnapshot { uint32 table_id = 1; uint64 hand_id = 2; uint64 revision = 3; Street street = 4; repeated PlayerState players = 5; repeated Card board = 6; int32 acting_seat = 7; int32 dealer_seat = 8; int64 pot = 9; int64 current_bet = 10; int64 min_raise = 11; string result = 12; }
+message Envelope {
+  uint32 protocol_version = 1;
+  uint64 request_id = 2;
+  oneof payload {
+    AuthenticateRequest authenticate = 10;
+    AuthenticateReply authenticated = 11;
+    Empty list_tables = 12;
+    LobbyReply lobby = 13;
+    JoinTableRequest join_table = 14;
+    Empty leave_table = 15;
+    ReadyRequest ready = 16;
+    ActionRequest action = 17;
+    TableSnapshot snapshot = 18;
+    ErrorReply error = 19;
+    Empty ping = 20;
+    Empty pong = 21;
+    Empty acknowledged = 22;
+  }
+}
