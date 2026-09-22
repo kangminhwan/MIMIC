@@ -15,3 +15,7 @@ if ($LASTEXITCODE -ne 0) { throw 'C++ build failed.' }
 & (Join-Path (Split-Path $CMake -Parent) 'ctest.exe') --test-dir "$repo\build" -C Release --output-on-failure
 if ($LASTEXITCODE -ne 0) { throw 'C++ tests failed.' }
 & "$PSScriptRoot\Sync-UnityDependencies.ps1"
+New-Item -ItemType Directory -Force "$repo\artifacts" | Out-Null
+& dotnet run --project "$repo\tests\AccountTests\Mimic.AccountTests.csproj" -c Release --no-build > "$repo\artifacts\account-tests.log"
+if ($LASTEXITCODE -ne 0) { Get-Content "$repo\artifacts\account-tests.log" -Tail 35; throw 'Account tests failed.' }
+Get-Content "$repo\artifacts\account-tests.log" -Tail 3
