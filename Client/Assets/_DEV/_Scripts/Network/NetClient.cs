@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Ayve.Net.Transport;
 using Google.Protobuf;
 using Mimic.Protocol;
 
@@ -12,105 +11,77 @@ namespace Mimic.Network
 {
     public sealed class NetClient : IDisposable
     {
-        private const int MaxFrame = 65536;
-        private readonly TcpClient socket = new TcpClient();
-        private readonly SemaphoreSlim sendGate = new SemaphoreSlim(1, 1);
-        private readonly ConcurrentDictionary<ulong, TaskCompletionSource<Envelope>> pending = new ConcurrentDictionary<ulong, TaskCompletionSource<Envelope>>();
+        private readonly TcpLink link = new TcpLink(new TcpLinkOptions { MaxPayloadBytes = 65536, ConnectTimeoutMs = 5000 });
+        private readonly ConcurrentDictionary<uint, TaskCompletionSource<Envelope>> pending = new ConcurrentDictionary<uint, TaskCompletionSource<Envelope>>();
         private readonly ConcurrentQueue<Envelope> inbox = new ConcurrentQueue<Envelope>();
         private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
-        private NetworkStream stream;
-        private long sequence;
-        private int queued;
-        private int disposed;
+        private readonly object sendGate = new object();
+        private uint sequence;
+        private int queued, disposed;
+        private Exception disconnectError;
         public event Action<Envelope> Received;
         public event Action<Exception> Disconnected;
-        private Exception disconnectError;
-        public bool IsConnected => stream != null && !lifetime.IsCancellationRequested;
+        public bool IsConnected => link.IsConnected && !lifetime.IsCancellationRequested;
 
+        public NetClient()
+        {
+            link.PacketReceived += Receive;
+            link.Faulted += fault => Fail(new IOException(fault.Message, fault.Exception));
+        }
         public async Task ConnectAsync(string host, int port)
         {
-            if (stream != null || lifetime.IsCancellationRequested) throw new InvalidOperationException("Create a new client to reconnect");
-            var connect = socket.ConnectAsync(host, port);
-            if (await Task.WhenAny(connect, Task.Delay(5000)) != connect) { Dispose(); throw new TimeoutException("Table connection timed out"); }
-            await connect;
-            socket.NoDelay = true;
-            stream = socket.GetStream();
-            _ = ReceiveLoop();
+            if (lifetime.IsCancellationRequested) throw new ObjectDisposedException(nameof(NetClient));
+            if (!await link.ConnectAsync(host, port, lifetime.Token)) throw new IOException("테이블 서버에 연결할 수 없습니다.");
             _ = HeartbeatLoop();
         }
-
-        public async Task<Envelope> RequestAsync(Envelope request)
+        public async Task<Envelope> RequestAsync(Envelope message)
         {
-            if (!IsConnected) throw new IOException("Not connected");
+            uint id;
             var completion = new TaskCompletionSource<Envelope>(TaskCreationOptions.RunContinuationsAsynchronously);
-            ulong id = 0;
-            await sendGate.WaitAsync(lifetime.Token);
-            try
+            lock (sendGate)
             {
-                // Allocate IDs inside the send gate so wire order is strictly increasing.
-                id = (ulong)Interlocked.Increment(ref sequence);
-                request.ProtocolVersion = 1; request.RequestId = id;
-                if (pending.Count >= 64) throw new IOException("Too many pending requests");
-                var body = request.ToByteArray();
-                if (body.Length == 0 || body.Length > MaxFrame) throw new IOException("Invalid frame length");
+                if (!IsConnected) throw new IOException("서버 연결이 끊어졌습니다. 다시 로그인해 주세요.");
+                if (pending.Count >= 64) throw new IOException("요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.");
+                if (sequence == uint.MaxValue) { Dispose(); throw new IOException("연결을 갱신해 주세요."); }
+                id = ++sequence;
+                message.ProtocolVersion = 1; message.RequestId = id;
+                var body = message.ToByteArray();
+                if (body.Length == 0 || body.Length > 65536) throw new IOException("Invalid packet size");
                 pending[id] = completion;
-                var frame = new byte[4 + body.Length];
-                frame[0] = (byte)(body.Length >> 24); frame[1] = (byte)(body.Length >> 16);
-                frame[2] = (byte)(body.Length >> 8); frame[3] = (byte)body.Length;
-                Buffer.BlockCopy(body, 0, frame, 4, body.Length);
-                using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
-                {
-                    timeout.CancelAfter(5000);
-                    await stream.WriteAsync(frame, 0, frame.Length, timeout.Token);
-                }
+                if (!link.TrySend((uint)message.PayloadCase, body, id))
+                { pending.TryRemove(id, out _); throw new IOException("요청을 전송하지 못했습니다."); }
             }
-            catch (Exception error) { pending.TryRemove(id, out _); disconnectError = error; Dispose(); throw; }
-            finally { sendGate.Release(); }
             try
             {
                 if (await Task.WhenAny(completion.Task, Task.Delay(5000, lifetime.Token)) != completion.Task)
-                    throw new TimeoutException("Request timed out; reconnect to resynchronize");
+                {
+                    var error = new TimeoutException("서버 응답이 늦어지고 있습니다. 다시 연결해 주세요.");
+                    Fail(error); throw error;
+                }
                 var response = await completion.Task;
                 if (response.Error != null) throw new InvalidOperationException(response.Error.Message);
                 return response;
             }
-            catch (TimeoutException error) { disconnectError = error; Dispose(); throw; }
             finally { pending.TryRemove(id, out _); }
         }
-
-        private async Task ReadExactly(byte[] bytes)
-        {
-            int offset = 0;
-            while (offset < bytes.Length)
-            {
-                int count = await stream.ReadAsync(bytes, offset, bytes.Length - offset, lifetime.Token).ConfigureAwait(false);
-                if (count == 0) throw new EndOfStreamException("Server disconnected");
-                offset += count;
-            }
-        }
-        private async Task ReceiveLoop()
+        private void Receive(InboundPacket packet)
         {
             try
             {
-                var header = new byte[4];
-                while (!lifetime.IsCancellationRequested)
+                var message = Envelope.Parser.ParseFrom(packet.Payload);
+                if (message.ProtocolVersion != 1 || message.RequestId != packet.Nonce || (uint)message.PayloadCase != packet.Command)
+                    throw new IOException("프로토콜이 일치하지 않습니다.");
+                if (message.RequestId != 0)
                 {
-                    await ReadExactly(header).ConfigureAwait(false);
-                    uint size = ((uint)header[0] << 24) | ((uint)header[1] << 16) | ((uint)header[2] << 8) | header[3];
-                    if (size == 0 || size > MaxFrame) throw new IOException("Invalid server frame length");
-                    var body = new byte[(int)size]; await ReadExactly(body).ConfigureAwait(false);
-                    var message = Envelope.Parser.ParseFrom(body);
-                    if (message.ProtocolVersion != 1) throw new IOException("Unsupported protocol version");
-                    if (message.RequestId != 0 && pending.TryRemove(message.RequestId, out var waiter)) waiter.TrySetResult(message);
-                    else if (message.RequestId == 0)
-                    {
-                        if (Interlocked.Increment(ref queued) > 256) throw new IOException("Server event queue overflow");
-                        inbox.Enqueue(message);
-                    }
+                    if (pending.TryRemove(packet.Nonce, out var waiter)) waiter.TrySetResult(message);
+                }
+                else
+                {
+                    if (Interlocked.Increment(ref queued) > 256) throw new IOException("Too many server events");
+                    inbox.Enqueue(message);
                 }
             }
-            catch (Exception error) { if (!lifetime.IsCancellationRequested) disconnectError = error; }
-            finally { Dispose(); }
+            catch (Exception error) { Fail(error); }
         }
         private async Task HeartbeatLoop()
         {
@@ -122,7 +93,13 @@ namespace Mimic.Network
                     await RequestAsync(new Envelope { Ping = new Empty() }).ConfigureAwait(false);
                 }
             }
-            catch (Exception error) { if (!lifetime.IsCancellationRequested) { disconnectError = error; Dispose(); } }
+            catch (Exception error) { if (!lifetime.IsCancellationRequested) Fail(error); }
+        }
+        private void Fail(Exception error)
+        {
+            if (Volatile.Read(ref disposed) != 0) return;
+            Interlocked.CompareExchange(ref disconnectError, error, null);
+            Dispose();
         }
         public void Pump()
         {
@@ -134,9 +111,15 @@ namespace Mimic.Network
         public void Dispose()
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0) return;
-            lifetime.Cancel(); socket.Close();
-            foreach (KeyValuePair<ulong, TaskCompletionSource<Envelope>> entry in pending)
+            lifetime.Cancel();
+            foreach (var entry in pending)
                 if (pending.TryRemove(entry.Key, out var waiter)) waiter.TrySetException(new IOException("Connection closed"));
+            _ = CloseLink();
+        }
+        private async Task CloseLink()
+        {
+            try { await link.DisposeAsync(); }
+            catch (Exception) { /* Shutdown must not escape a Unity lifecycle callback. */ }
         }
     }
 }

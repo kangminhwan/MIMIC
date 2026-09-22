@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Mimic;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -12,36 +11,29 @@ namespace Mimic.Editor
         [MenuItem("MIMIC/Prepare project")]
         public static void Prepare()
         {
-            PlayerSettings.companyName = "MIMIC";
-            PlayerSettings.productName = "MIMIC";
-            PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Standalone, "com.mimic.holdem");
-            PlayerSettings.defaultScreenWidth = 1100;
-            PlayerSettings.defaultScreenHeight = 720;
-            PlayerSettings.runInBackground = true;
-            PlayerSettings.insecureHttpOption = InsecureHttpOption.DevelopmentOnly;
-            Directory.CreateDirectory("Assets/_Scenes");
-            const string path = "Assets/_Scenes/Bootstrap.unity";
-            if (!File.Exists(path))
-            {
-                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                new GameObject("MIMIC").AddComponent<MimicBootstrap>();
-                EditorSceneManager.SaveScene(scene, path);
-            }
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(path, true) };
-            AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
-            Debug.Log("MIMIC project prepared.");
+            foreach (string scene in MimicSceneBuilder.Scenes)
+                if (!File.Exists(scene)) { MimicSceneBuilder.Generate(); return; }
+            var scenes = new EditorBuildSettingsScene[MimicSceneBuilder.Scenes.Length];
+            for (int i=0;i<scenes.Length;++i) scenes[i] = new EditorBuildSettingsScene(MimicSceneBuilder.Scenes[i], true);
+            EditorBuildSettings.scenes = scenes; AssetDatabase.SaveAssets();
+        }
+        [MenuItem("MIMIC/Open starting scene")]
+        public static void OpenTitle()
+        {
+            Prepare();
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) EditorSceneManager.OpenScene(MimicSceneBuilder.Scenes[0]);
         }
         [MenuItem("MIMIC/Build Windows development client")]
         public static void BuildWindows()
         {
-            Prepare();
-            Directory.CreateDirectory("Builds/Windows");
+            Prepare(); Directory.CreateDirectory("Builds/Windows");
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
-                scenes = new[] { "Assets/_Scenes/Bootstrap.unity" },
+                scenes = MimicSceneBuilder.Scenes,
                 locationPathName = "Builds/Windows/MIMIC.exe", target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.Development
             });
             if (report.summary.result != BuildResult.Succeeded) throw new Exception("MIMIC player build failed");
         }
+        public static void GenerateAndBuild() { MimicSceneBuilder.Generate(); BuildWindows(); }
     }
 }

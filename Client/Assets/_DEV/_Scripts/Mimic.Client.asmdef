@@ -1,1 +1,8 @@
-{"name":"Mimic.Client","rootNamespace":"Mimic","references":[],"autoReferenced":true}
+{
+  "name": "Mimic.Client",
+  "rootNamespace": "Mimic",
+  "references": [
+    "Unity.ugui"
+  ],
+  "autoReferenced": true
+}
