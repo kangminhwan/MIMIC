@@ -1,0 +1,637 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Protobuf">
+      <UniqueIdentifier>{19428c70-d3bd-4d56-b435-0e6fe99fcfa3}</UniqueIdentifier>
+    </Filter>
+    
+    <Filter Include="tinyxml">
+      <UniqueIdentifier>{4a7f6e25-b167-4aad-b068-436df9aea4d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instance">
+      <UniqueIdentifier>{5e4aac16-c6af-4795-94a4-04e35e05dd9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{db68113c-377b-4b56-8013-416d7e8e2cd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mysql">
+      <UniqueIdentifier>{5be7b9cf-a467-456c-a19c-5dc25488fe42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Query">
+      <UniqueIdentifier>{c06c3652-1857-45d5-b6b7-3f4aa1d09419}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Room">
+      <UniqueIdentifier>{431e65f1-6fa6-4730-8604-0e84339fda05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{4fb98545-09ed-4ced-bdbf-b8f8903dc5db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Schema">
+      <UniqueIdentifier>{40382d33-cc2b-49ca-97b6-04314be386f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Slack">
+      <UniqueIdentifier>{d09a24ea-9a6a-4533-87dd-499cfa1a93bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Redis">
+      <UniqueIdentifier>{6faef197-270e-4ee4-9fde-8f63c0180920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Interface">
+      <UniqueIdentifier>{ee6fb4ef-ca76-462a-ace5-21e35786380b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Table">
+      <UniqueIdentifier>{5a34d506-7a67-44c8-84d6-74e1e791eefe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataLoader">
+      <UniqueIdentifier>{e71f571e-f903-41b4-804f-08fd5e4545ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Event">
+      <UniqueIdentifier>{d9cee8b7-7585-48ae-8fdc-f8163269d332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{4a591220-d390-4ac6-b9ee-67cfc2aeec8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="log">
+      <UniqueIdentifier>{24962088-e959-4805-aba4-630d6888e13f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Event\Data">
+      <UniqueIdentifier>{9026f994-0a98-4a9c-84ff-34b304217e1c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TableServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml\tinyxmlparser.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml\tinystr.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml\tinyxml.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml\tinyxmlerror.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="TableServerMain.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cInstancePacketParser.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="cSystemStub.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientSession.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="cInstancePacketParserServer.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="cInstancePacketParserWeb.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="cProtoMsgStub.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="cProtoUtil.cpp">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ProtocolBuffer\cpp\General.pb.cc">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ProtocolBuffer\cpp\PmNet.pb.cc">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\cMySQL.cpp">
+      <Filter>Mysql</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\cMysqladhocQuery.cpp">
+      <Filter>Mysql</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\cMySQLConnectionPooler.cpp">
+      <Filter>Mysql</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\cMySQLReader.cpp">
+      <Filter>Mysql</Filter>
+    </ClCompile>
+    <ClCompile Include="Query.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cGameRoom.cpp">
+      <Filter>Room</Filter>
+    </ClCompile>
+    <ClCompile Include="cGameRoomManager.cpp">
+      <Filter>Room</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ProtocolBuffer\cpp\Server.pb.cc">
+      <Filter>Protobuf</Filter>
+    </ClCompile>
+    
+    </ClCompile>
+    <ClCompile Include="cVirtualClient.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="cRedisController.cpp">
+      <Filter>Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryAvatar.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryRecord.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientRecords.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryJokboRecord.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientLevel.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryMailBox.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientMailBox.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryQuest.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientQuest.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientShop.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientLostLimit.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientAttendance.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="IGame.cpp">
+      <Filter>Game\Interface</Filter>
+    </ClCompile>
+    
+    </ClCompile>
+    
+    </ClCompile>
+    <ClCompile Include="cBettingChecker.cpp">
+      <Filter>Game\Table</Filter>
+    </ClCompile>
+    <ClCompile Include="cHoldem.cpp">
+      <Filter>Game\Table</Filter>
+    </ClCompile>
+    <ClCompile Include="cHoldemJokbo.cpp">
+      <Filter>Game\Table</Filter>
+    </ClCompile>
+    
+    </ClCompile>
+    
+    </ClCompile>
+    
+    </ClCompile>
+    <ClCompile Include="cSidePot.cpp">
+      <Filter>Game\Table</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryLog.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cDataLoader.cpp">
+      <Filter>DataLoader</Filter>
+    </ClCompile>
+    
+    </ClCompile>
+    <ClCompile Include="cFreeCharger.cpp">
+      <Filter>DataLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="cProtoMsgStubServerToServer.cpp">
+      <Filter>Instance</Filter>
+    </ClCompile>
+    
+    </ClCompile>
+    <ClCompile Include="QueryFriend.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cMoneyLogInstance.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="cGameLogInstance.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="cGameLogStatisticInstance.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryAccountLog.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="cMaintenanceManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="cAssetLog.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="cAdsLog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cMessageLog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cSocialLog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryAdsLog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryDailyLossBlock.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryGameLog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    
+    
+    
+    
+    <ClCompile Include="MadeSlackNotification.cpp">
+      <Filter>Slack</Filter>
+    </ClCompile>
+    <ClCompile Include="cLoginEventManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="cClientQuestLoader.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tinyxml\tinystr.h">
+      <Filter>tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml\tinyxml.h">
+      <Filter>tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="cConfigReader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TableServerMain.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TableServerHeader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cInstancePacketParser.h">
+      <Filter>Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="IStub.h">
+      <Filter>Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="cSystemStub.h">
+      <Filter>Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="cClientSession.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="cProtoMsgStub.h">
+      <Filter>Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="cProtoUtil.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ProtocolBuffer\cpp\General.pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ProtocolBuffer\cpp\PmNet.pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cMySQL.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cMysqladhocQuery.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cMySQLConnectionPooler.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cMySQLParserElement.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cMySQLReader.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\cParamBinder.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\DefProcedure.h">
+      <Filter>Mysql</Filter>
+    </ClInclude>
+    <ClInclude Include="Query.h">
+      <Filter>Query</Filter>
+    </ClInclude>
+    <ClInclude Include="AuthCodeGenerator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeUtils.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cGameRoom.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="cGameRoomManager.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="cUsingGameRoomContainer.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="cCardDeck.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="cGuid.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ProtocolBuffer\cpp\Server.pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ProtocolBuffer\cpp\Operation.pb.h">
+      <Filter>Protobuf</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cLogicException.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cVirtualSession.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="UniqueKey.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cRedisController.h">
+      <Filter>Redis</Filter>
+    </ClInclude>
+    <ClInclude Include="XorEncryption.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtil.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="IGame.h">
+      <Filter>Game\Interface</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cBettingChecker.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    <ClInclude Include="cHoldem.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    <ClInclude Include="cHoldemKicker.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    <ClInclude Include="cHoldemSameJokboCompare.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cQADecks.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    
+    </ClInclude>
+    <ClInclude Include="cSidePot.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    <ClInclude Include="cVoteSystem.h">
+      <Filter>Game\Table</Filter>
+    </ClInclude>
+    <ClInclude Include="cDataLoader.h">
+      <Filter>DataLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="cFreeCharger.h">
+      <Filter>DataLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="cLevelManager.h">
+      <Filter>DataLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="cLoungeEvent.h">
+      <Filter>Event</Filter>
+    </ClInclude>
+    <ClInclude Include="cFriendManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="cLostLimitManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="cMoneyLogInstance.h">
+      <Filter>log</Filter>
+    </ClInclude>
+    <ClInclude Include="cGameLogInstance.h">
+      <Filter>log</Filter>
+    </ClInclude>
+    <ClInclude Include="cGameLogStatisticInstance.h">
+      <Filter>log</Filter>
+    </ClInclude>
+    <ClInclude Include="cGameVersionChecker.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="cMaintenanceManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="cOpsManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="cAssetLog.h">
+      <Filter>log</Filter>
+    </ClInclude>
+    <ClInclude Include="cAdsLog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cMessageLog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cSocialLog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TrieNode.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    
+    
+    <ClInclude Include="CirularVector.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cCache.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="IpTimeQueue.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    
+    
+    
+    
+    <ClInclude Include="MadeSlackNotification.h">
+      <Filter>Slack</Filter>
+    </ClInclude>
+    <ClInclude Include="MadePlatform.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="cLoginEventManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="TableServer.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ProtocolBuffer\protoMessages\General.proto">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="..\..\ProtocolBuffer\protoMessages\PmNet.proto">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="..\..\ProtocolBuffer\protoMessages\Server.proto">
+      <Filter>Protobuf</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="..\..\ProtocolBuffer\protoMessages\Operation.proto">
+      <Filter>Protobuf</Filter>
+    </None>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <None Include="..\GameData\Attendance_reward.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    <None Include="..\GameData\Avatar_Data.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    <None Include="..\GameData\BasicSetting.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    <None Include="..\GameData\ButtonList.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <None Include="..\GameData\GameConfig.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    <None Include="..\GameData\ItemProduct.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    <None Include="..\GameData\Level_data.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    
+    
+    
+    
+    
+    
+    
+    <None Include="..\GameData\Lottery_Reward.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+    
+    
+    
+    
+    
+    <None Include="..\GameData\StoreProduct.csv">
+      <Filter>Event\Data</Filter>
+    </None>
+  </ItemGroup>
+</Project>

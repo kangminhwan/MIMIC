@@ -24,3 +24,35 @@ Client/.vsconfig
 **/*.db-shm
 **/*.db-wal
 **/DataStore/
+
+# Native build products and restored packages
+/Server/Lib/Debug/
+/Server/Lib/Release/
+/Server/packages/
+
+# Native intermediates and local deployment settings
+**/[Bb]in/
+**/[Oo]bj/
+/Server/**/Debug/
+/Server/**/Release/
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.ipch
+*.pch
+*.tlog
+*.lastbuildstate
+*.log
+*.tmp
+*.bak
+*~
+/Server/Lib/Netlib.lib
+/Server/TableServer/TableServer.xml
+/Server/TableServer/TableServerLive.xml
+/Server/TableServer/*.local.h
+/Server/TableServer/*.sha1
+/ProtocolBuffer/Jenkinsfile
+# Keep the compiler required for protocol generation.
+!/ProtocolBuffer/protoc/bin/
+!/ProtocolBuffer/protoc/bin/protoc.exe

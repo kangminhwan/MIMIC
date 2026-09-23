@@ -1,57 +1,38 @@
 # MIMIC
 
-[한국어 실행 안내](docs/GETTING_STARTED.ko.md)
+Unity 6000.3.22f1 + native C++ TableServer, adapted for Texas Hold'em and Protocol Buffers.
 
-Unity + C++/C# Texas Hold'em framework. One game, one shared Protocol Buffers contract.
+[한국어 이전·실행 안내](docs/TABLESERVER_PROTOBUF_MIGRATION.md)
 
-```text
-Client/                       Unity 6000.3.22f1
-  Assets/_DEV/_Scripts/       0_Title, 1_Lobby, Managers, Network, Data, Holdem, System
-  Assets/_Scenes/             Bootstrap scene
-Server/
-  FrontServer/                C# .NET 8 discovery (127.0.0.1:5080)
-  PlatformServer/             C# .NET 8 guest/session service (127.0.0.1:5081)
-  TableServer/                C++20 authoritative Holdem (127.0.0.1:7777)
-  Netlib/                     Bounded Protobuf TCP framing and session validation
-ProtocolBuffer/proto/         Shared schema; C++ generated at build time
-Scripts/                     Build, codegen, local run and integration test helpers
-tests/                       C++ domain checks and real C#/C++ network smoke
-```
+The default client now connects directly to the original TableServer protocol on port 22001. The original casino TCP transport and request queue are imported from `C:/NewClient/casino`; payload serialization uses Google.Protobuf. Blackjack, LowBaduki, Baccarat, Slot, Pinball and Roulette gameplay and dispatch have been removed from TableServer.
 
-## Requirements
+## Build
 
-- Windows, Visual Studio 2022 Desktop development with C++, Windows SDK, CMake >= 3.24.
-- .NET 8 SDK; Unity 6000.3.22f1 with Windows Build Support.
-- vcpkg with `protobuf:x64-windows` installed (`C:/vcpkg` by default).
-- PowerShell. Run the commands below from the repository root.
-
-## Build and test
+Requirements: Windows, Visual Studio 2022 C++ tools, .NET 8, Unity 6000.3.22f1, and the copied `Server/Include`, native libraries and `C:/vcpkg` dependencies. The repository's bundled protoc 3.21 matches the C++ protobuf headers.
 
 ```powershell
-./Scripts/Build.ps1 -VcpkgRoot C:/vcpkg
+./Scripts/Build.ps1
 ./Scripts/Test-Smoke.ps1
-./Scripts/Build-Unity.ps1
-./Scripts/Test-UnitySmoke.ps1
+./Scripts/Build-Unity.ps1 -Isolated
 ```
 
-`Build.ps1` regenerates C# from the shared proto, builds both C# services and the smoke client, builds C++ and runs domain tests, then syncs the Unity Protobuf runtime. Supply `-CMake` when CMake is elsewhere. The generated C# and Unity runtime DLL are committed so Unity can open the project without installing protoc first. C++ generated files stay in the ignored build folder.
+For just the server, use `./Scripts/Build-TableServer.ps1 -Configuration Debug` (or `Release`). MSBuild builds the matching Netlib configuration before TableServer. The server output is `Server/Bin/TableServer/TableServer.exe`.
 
-## Run
+## Configure and run
 
-```powershell
-./Scripts/Start-Local.ps1 -NoBuild
-```
+1. Configure the original database, Redis, lobby routing and client version in the native server environment. `Build-TableServer.ps1` initially copies `Server/TableServer/TableServer.xml` beside the executable and preserves any existing runtime copy.
+2. Set `Client/Assets/Resources/Config/client.json`: `tableHost`, `tablePort`, `holdemChannel`, `holdemBetPolicy`, `appVersion` and `storeChannel`.
+3. Run `./Scripts/Start-Local.ps1 -NoBuild` after the backend is ready. Check `artifacts/table.log` for startup status. Stop the launched process with `./Scripts/Stop-Local.ps1`.
+4. Open `Client` in Unity and play the starting scene. Sign in with an existing original account. Quick start creates a Holdem room if no room is available. With at least two players, the player designated by the server as lead can start. Betting buttons follow the server's allowed actions.
 
-Open `Client` with Unity Hub, open `Assets/_Scenes/Bootstrap.unity`, and press Play. Open `Client/Builds/Windows/MIMIC.exe` as the second player after building. Enter different display names, connect, join the table, and press Ready in both clients. Call/check through a hand, or fold/raise. The server deals and settles the hand, and each client sees only its own private cards. Choose Ready again for the next hand.
+The original account registration/identity verification service is required to create accounts. Native mode hides the unrelated demo registration screen. A native server is not authenticated by the retained C# demo account service.
 
-`MIMIC > Prepare project` recreates the bootstrap scene if missing; `MIMIC > Build Windows development client` builds from the editor. The HTTP discovery endpoint is configured in `Client/Assets/Resources/Config/client.json`. Local service logs and tracked process IDs are written only to ignored `artifacts/`.
+## Protocol and verification
 
-```powershell
-./Scripts/Stop-Local.ps1
-```
+- Native wire schemas: `ProtocolBuffer/protoMessages/General.proto`, `PmNet.proto`, `Server.proto`, `Operation.proto`.
+- `Scripts/Generate-Protocol.ps1` regenerates C++ and both C# consumers from those schemas.
+- Requests contain raw protobuf messages. Replies contain `PmNet.PktBase`; the original 24-byte header and XOR framing remain compatible.
+- `tests/TableServerClient` uses a loopback TCP peer to test fragmented frames, empty replies, Holdem state updates, server redirects, heartbeat, invalid packets and connection cleanup without a production database.
+- The C# FrontServer/PlatformServer and `mimic.proto` are retained for the earlier demo and local screen models. They are separate from native TableServer authentication. Old demo instructions are archived in [DEMO_README_ARCHIVE.md](docs/DEMO_README_ARCHIVE.md).
 
-## Scope
-
-The structure follows the reference server/client roles while keeping only Holdem. The preview includes development guest login, sessions, a six-seat lobby/table, server-side shuffle and betting rounds, hand evaluation, pot settlement, per-player snapshots, heartbeat, framing validation, request correlation and tests. The IMGUI screen is a functional development harness; final art, uGUI/prefabs and mobile layout remain separate work.
-
-**Not production-ready:** no real account/wallet persistence, automatic reconnect, turn timers or live deployment setup. Short all-in raises are explicitly rejected; short all-in calls and pot splitting are supported. All services default to localhost and demo chips only. See [architecture and limitations](docs/ARCHITECTURE.md) and [verification](docs/VERIFICATION.md).
+See the migration guide for completed checks and runtime limits.

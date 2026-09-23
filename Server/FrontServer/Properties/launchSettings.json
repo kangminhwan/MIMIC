@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Mimic.FrontServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:17642;http://localhost:17643"
+    }
+  }
+}

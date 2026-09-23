@@ -1,0 +1,796 @@
+syntax = "proto3"; 
+
+import "General.proto";
+import "PmNet.proto";
+
+package Server;
+
+// 단위 ms
+enum PmNetDef
+{
+	//option allow_alias = true;
+	TimeDef_None = 0;
+	//LowBaduki_PlayerCount = 5;						// 로우바둑이 플레이 유저 제한, 관전자는 제한 없음
+	//LowBaduki_Wait = 1500;							// 유저가 2인 이상 되었을때, 방장이 시작 버튼을 누를수 있는 시간
+	//LowBaduki_Base_Distribution_Animation = 4000;	// 최초 카드 분배 연출 애니메이션 대기 시간 ( 클라에서 연출 하는 동안 다음 진행이 안되도록 대기하는 시간 )
+	//LowBaduki_Bet_Wait = 10000;						// 베팅간 대기시간, 10초로 셋
+	//LowBaduki_Card_Change_Wait = 10000;				// 아침, 점심, 저녁 카드 교체시의 대기 시간
+	//LowBaduki_Turn_Minimum_Wait = 1000;				// 베팅 및 카드 교체 대기 시간 최소
+	//LowBaduki_Result_Wait = 15000;					// 결과창 시간
+	// LowBaduki_Bet_ChipMax = 1750000000000;		// 칩베팅 맥스값 enum 값의 범위를 벗어남
+	//LowBaduki_Recently_Win_History_Count = 5;		// 방 정보에서 최근 승리 족보 목록 사이즈
+	LowBaduki_End = 4000;							// 동일한 값이 없다고 allow_alias 옵션을 자꾸 빼라고 해서 하나 넣어 놓았음
+}
+
+// Server-internal game state enum. Moved from General.proto so it is never generated into the
+// client wire schema (csharp_client only processes PmNet/General). Values unchanged; each game
+// (Baccarat/Holdem/Blackjack/LowBaduki) intentionally reuses this shared, aliased field type as
+// the common IGame::m_gameStep state-machine type. Wire-facing DTOs carry the same numeric value
+// as a plain int32 instead (see PmNet.proto match_phase fields, General.proto RoomSnapshot.play_phase).
+enum PlayPhase
+{
+	option allow_alias = true;
+	PlayPhase_Waiting = 0;
+	PlayPhase_StartReady = 1;
+	PlayPhase_BaccaratOpening = 1;
+	PlayPhase_InitialDeal = 2;
+	PlayPhase_HoldemPreFlop = 2;
+	PlayPhase_FirstBet = 3;
+	PlayPhase_TableBet = 3;
+	PlayPhase_LowMorning = 4;
+	PlayPhase_HoldemFlop = 4;
+	PlayPhase_TableCardOpen = 4;
+	PlayPhase_SecondBet = 5;
+	PlayPhase_PlayerCardOpen = 5;
+	PlayPhase_LowNoon = 6;
+	PlayPhase_HoldemTurn = 6;
+	PlayPhase_BankerCardOpen = 7;
+	PlayPhase_DealerCardOpen = 7;
+	PlayPhase_ThirdBet = 7;
+	PlayPhase_LowEvening = 8;
+	PlayPhase_HoldemRiver = 8;
+	PlayPhase_FinalBet = 9;
+	PlayPhase_Judgement = 10;
+	PlayPhase_HoldemShowdown = 11;
+	PlayPhase_BlackjackPopup = 12;
+	PlayPhase_DoubleDownEffect = 13;
+	PlayPhase_DealerFirstOpen = 14;
+	PlayPhase_PopupEffect = 15;
+	PlayPhase_CardShuffle = 16;
+}
+
+message PlayResultServer
+{
+	PmNet.MemberOutcome player_result = 1;
+	uint64 point					= 2;
+}
+
+message Channel
+{
+	string id = 1;
+	General.PlayCategory game_type = 2;
+	General.AssetKind money_type = 3;
+	General.LobbyButtonPreset button_type = 4;
+	uint64 seed_money = 5;				// 플레이 하기 위해 필요한 시드 머니
+	uint64 money_min = 6;				// 채널 입장시 필요한 최소 금액
+	uint64 money_kick = 7;				// 채널 Kick 조건
+	uint64 money_max = 8;				// 채널 입장시 필요한 최대 금액, 0 으로 셋팅되면 제한 없음
+	uint64 limit_bet_money = 9;			// 최대 베팅 금액, 0 으로 셋팅되면 제한 없음
+	uint64 bet_1 = 10;					// 베팅 1 Money Value
+	uint64 bet_2 = 11;					// 베팅 2 Money Value
+	uint64 bet_3 = 12;					// 베팅 3 Money Value
+	uint64 bet_4 = 13;					// 베팅 4 Money Value
+	string bet_max = 14;				// string 으로 MAX 가 들어오게 됨 (100000/500000/1000000/5000000/MAX)
+	uint64 player_and_banker_max = 15;	// 플레이어 & 뱅커 Max
+	uint64 tie_and_pair_max = 16;		// 타이 & 페어 Max
+	uint64 default_room_list = 17;		// 디폴트로 생성해야할 방 갯수?? 확인 필요
+	ChannelPlayMode channel_content_type = 18; // 채널의 컨텐츠 타입
+	uint32 dealer_fee = 19;				// Dealer fee percentage scaled by 100.
+
+	repeated General.TableAction button_list = 20;	// 버튼 리스트 ButtonList.csv 파일 참조
+	
+	uint64 pp = 22;						//PP 
+
+	int32 server_id = 21;				// 채널이 할당된 서버 ( 로비  서버 1 , 2 만 초반에 운영 )
+}
+
+enum SafeBoxLogType
+{
+	SafeBoxLogType_None = 0;
+	SafeBoxLogType_Deposit_Chip = 1;
+	SafeBoxLogType_Withdraw_Chip = 2;
+	SafeBoxLogType_Deposit_Coin = 3;
+	SafeBoxLogType_Withdraw_Coin = 4;
+}
+
+// reel 데이터는 1% 의 확률인 경우 0.01 로 데이터에 표기하기로 협의
+message CasReelData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	int32 id = 3;
+	int32 areel = 4;
+	int32 breel = 5;
+	int32 creel = 6;
+	int32 dreel = 7;
+	int32 ereel = 8;
+	int32 freel = 9;
+}
+
+// rate 0 ~ rate 6 까지의 합이 1이 되어야 한다.
+message CasSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	//int32 id = 3;										// 삭제 됨
+	int32 rate_0 = 4;									// 0개 당첨 확률
+	int32 rate_1 = 5;									// 1개 당첨 확률
+	int32 rate_2 = 6;									// 2개 당첨 확률
+	int32 rate_3 = 7;									// 3개 당첨 확률
+	int32 rate_4 = 8;									// 4개 당첨 확률
+	int32 rate_5 = 9;									// 5개 당첨 확률
+	int32 rate_6 = 10;									// 6개 당첨 확률
+}
+
+enum SpecialSymbolShowCount
+{
+	SpecialSymbolShowCount_None = 0;
+	ShowCount_1 = 1;
+	ShowCount_2 = 2;
+	ShowCount_3 = 3;
+	ShowCount_4 = 4;
+	ShowCount_5 = 5;
+	ShowCount_6 = 6;
+	ShowCount_7 = 7;
+}
+
+enum MultiplierRate
+{
+	MultiplierRate_None = 0;
+	x1 = 100;					// 해적에서 1배 짜리도 필요해 추가 한다.
+	x2 = 1;
+	x3 = 2;
+	x4 = 3;
+	x5 = 4;
+	x6 = 5;
+	x8 = 6;
+	x10 = 7;
+	x12 = 8;
+	x15 = 9;
+	x20 = 10;
+	x25 = 11;
+	x50 = 12;
+	x100 = 13;
+	x250 = 14;
+	x1000 = 15;
+}
+
+message CasMultiPercentage
+{
+	General.SpinMode spin_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	int32 x2 = 3;
+	int32 x3 = 4;
+	int32 x4 = 5;
+	int32 x5 = 6;
+	int32 x6 = 7;
+	int32 x8 = 8;
+	int32 x10 = 9;
+	int32 x12 = 10;
+	int32 x15 = 11;
+	int32 x20 = 12;
+	int32 x25 = 13;
+	int32 x50 = 14;
+	int32 x100 = 15;
+	int32 x250 = 16;
+	int32 x1000 = 17;
+	string name = 100;
+}
+
+message CasSymbolId
+{
+	string name = 1;
+	int32 id = 2;
+	General.SymbolCode spin_type = 3;
+	string overlay_type = 4;
+	string overlay_rate = 5;
+	MultiplierRate multiplier_rate = 6;
+}
+
+message Level
+{
+	string id = 1;
+	int32 level = 2;
+	uint64 exp = 3;
+	uint64 reward_chip = 4;
+}
+
+message ClustReelData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	int32 id = 3;
+	int32 areel = 4;
+	int32 breel = 5;
+	int32 creel = 6;
+	int32 dreel = 7;
+	int32 ereel = 8;
+	int32 freel = 9;
+	int32 greel = 10;
+}
+
+message ClustSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 3;
+	//int32 id = 3;										// 삭제 됨
+	int32 rate_0 = 4;									// 0개 당첨 확률
+	int32 rate_1 = 5;									// 1개 당첨 확률
+	int32 rate_2 = 6;									// 2개 당첨 확률
+	int32 rate_3 = 7;									// 3개 당첨 확률
+	int32 rate_4 = 8;									// 4개 당첨 확률
+	int32 rate_5 = 9;									// 5개 당첨 확률
+	int32 rate_6 = 10;									// 6개 당첨 확률
+	int32 rate_7 = 11;									// 7개 당첨 확률
+
+}
+
+message LineReelData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	int32 id = 3;
+	int32 areel = 4;
+	int32 breel = 5;
+	int32 creel = 6;
+	int32 dreel = 7;
+	int32 ereel = 8;
+}
+
+message LineMultiPercentage
+{
+	General.SpinMode spin_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	int32 x1 = 7;
+	int32 x2 = 3;
+	int32 x3 = 4;
+	int32 x4 = 5;
+	int32 x5 = 6;
+	string name = 100;
+}
+
+message LineSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	//int32 id = 3;										// 삭제 됨
+	int32 rate_0 = 4;									// 0개 당첨 확률
+	int32 rate_1 = 5;									// 1개 당첨 확률
+	int32 rate_2 = 6;									// 2개 당첨 확률
+	int32 rate_3 = 7;									// 3개 당첨 확률
+	int32 rate_4 = 8;									// 4개 당첨 확률
+	int32 rate_5 = 9;									// 5개 당첨 확률
+}
+
+message AllwaysSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	General.SlotCatalog slot_game_type = 2;
+	//int32 id = 3;										// 삭제 됨
+	int32 rate_0 = 4;									// 0개 당첨 확률
+	int32 rate_1 = 5;									// 1개 당첨 확률
+	int32 rate_2 = 6;									// 2개 당첨 확률
+	int32 rate_3 = 7;									// 3개 당첨 확률
+	int32 rate_4 = 8;									// 4개 당첨 확률
+	int32 rate_5 = 9;									// 5개 당첨 확률
+	int32 rate_6 = 10;									// 6개 당첨 확률
+}
+
+message MegaWaysSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	//int32 id = 3;										// 삭제 됨
+	int32 rate_0 = 3;									// 0개 당첨 확률
+	int32 rate_1 = 4;									// 1개 당첨 확률
+	int32 rate_2 = 5;									// 2개 당첨 확률
+	int32 rate_3 = 6;									// 3개 당첨 확률
+	int32 rate_4 = 7;									// 4개 당첨 확률
+	int32 rate_5 = 8;									// 5개 당첨 확률
+	int32 rate_6 = 9;									// 6개 당첨 확률
+}
+
+message BasicSpecialSymbolPercentageData
+{
+	General.SymbolCode symbol_type = 1;
+	int32 rate_0 = 3;									// 0개 당첨 확률
+	int32 rate_1 = 4;									// 1개 당첨 확률
+	int32 rate_2 = 5;									// 2개 당첨 확률
+	int32 rate_3 = 6;									// 3개 당첨 확률
+	int32 rate_4 = 7;									// 4개 당첨 확률
+	int32 rate_5 = 8;									// 5개 당첨 확률
+	int32 rate_6 = 9;									// 6개 당첨 확률
+	int32 rate_7 = 10;									// 6개 당첨 확률
+}
+
+message LotteryData
+{
+	uint64 rate = 1;									// 확률 1백만분의 1
+	uint64 money_value = 2;								// 획득 금액
+	General.AssetKind money_type = 3;					// 머니 타입
+}
+
+message ShopProduct
+{
+	string id = 1;										// id
+	General.AssetKind buy_money_type = 2;				// 구매 재화 타입
+	uint64 money_value = 3;								// 구매 금액
+
+	// 상품을 전체 때려 박는다. 현재는 아바타와, 칩뿐이 없다.
+	int32 item_id = 6;									// 아이템 타입, 아바타 타입 에 따라 참조가 달라지니 주의
+	int32 item_count = 7;								// 열수
+	int32 item_add_days = 8;							// 아이템 expire time 시간 증가 ( 일수 )
+	uint64 paid_chips = 9;								// 유료 칩 수량
+	uint64 paid_coin = 10;								// 유료 코인 수량 ( 현재는 없음 )
+	int32 avatar_id = 11;								// 구매 아바타 아이디
+	int32 avatar_add_days = 12;							// 아바타의 착용 시간 증가 ( 일수 )
+	uint32 paid_gem = 13;								// 유료 다이아
+
+	General.BenefitTier member_ship_class = 15;		// 구매 멤버쉽 클라스
+	int32 membership_add_days = 16;						// 멤버쉽 사용 기간
+
+	int32 kick_out_ticket_count = 17;
+
+	// google, apple, onestore id 각기 저장
+	string google_product_id = 20;
+	string apple_product_id = 21;
+	string onestore_product_id = 22;
+
+	uint64 price = 23;									// 열수
+
+	bool isActivated = 30;								// 사용 유무
+}
+
+// PmNet 서버 Billing 서버 통신
+message ServerHeader
+{
+	General.PacketID msgid = 1;
+	ServiceStatusCode errorCode = 2;
+	int32 serverid = 3;
+	uint64 playerIdx = 4;
+	string DescriptorName = 5;
+	uint32 datasize = 6;
+	bytes data = 7;
+	string billingError = 8;
+}
+
+message PlatformAuthReq
+{
+	General.AccessChannelType platform_type = 1;				// 플랫폼 타입
+	string platform_auth_code = 2;						// 인증 처리용 auth_code
+}
+
+message PlatformAuthRes
+{
+	General.AccessChannelType platform_type = 1;				// 플랫폼 타입
+	string platform_auth_code = 2;						// 인증 처리용 auth_code
+	string platform_player_Id = 3;						// platform_auth_code 로 처리된 플에이어의 플레이어 아이디
+}
+
+message BuyShopAuthReq
+{
+	General.StoreProductKind shop_product_type = 1;	// General.StoreProductKind
+	string product_id = 2;							// shop id
+	string developer_pay_load = 3;					// 차후 사용 가능성 있음 ( 서버에서 부여하는 결제 검증용 스트링 )
+	string receipt = 4;								// 애플 영수증
+	string signature = 5;
+	General.StoreChannel market = 6;						// 열수
+	General.AccessChannelType platform = 7;				// 플랫폼
+	bool is_sandbox = 8;							// 샌드박스 여부
+}
+
+message BuyShopAuthRes
+{
+	General.StoreProductKind shop_product_type = 1;	// General.StoreProductKind
+	string product_id = 2;							// shop id
+	bool recv_mail = 3;								// 메일 수신 여부 ( true 인 경우 메일 목록 요청 필요 )
+	string transaction_i_d = 4;						// Market Code 가 Apple 일때만 사용합니다. ( 사용 유 무 아직 결정 못함 )
+	string order_id = 5;							// order id
+	string purchase_time = 6;						// 구매시각
+	bool is_sandbox = 7;							// 샌드박스 여부
+	string apple_receipt = 8;						// 애플 영수증
+}
+
+message Symbol
+{
+	int32 id = 1;
+	int32 weight = 2;
+	General.SymbolCode symbol_type = 3;
+	int32 number = 4;
+	int32 real_number = 5;
+}
+
+
+// 로그 설계 메시지 데이터
+
+message ProductData
+{
+	uint64 chip = 1;
+	uint64 coin = 2;
+	uint64 gem = 3;
+	General.BenefitTier member_ship_class = 4;
+	int32 kickout_ticket = 5;
+	int32 avatar_id = 6;
+	int32 count = 10;								// 차후 item 등이 생길경우 대비해서 넣어둠
+}
+
+message REQ_AUTHENTICATION
+{
+	int32 Server_Type = 1;
+	int32 ServerID = 2;
+	int32 ServerGID = 3;
+	int32 ServerPort = 4;
+	string Server_Connect_IP = 5;
+	string Server_Connect_Public_IP = 6;
+}
+
+message RES_AUTHENTICATION
+{
+	int32 ResultCode = 1;
+	uint64 Server_Key = 2;
+	int32 ConnectionServerType = 3;
+}
+
+message RoomListSync
+{
+	repeated General.RoomListEntry lowBadugi = 1;
+	repeated General.RoomListEntry holdem = 2;
+	repeated General.RoomListEntry baccarat = 3;
+	repeated General.RoomListEntry blackjack = 4;
+}
+
+// 플레이중인 방 목록 요청
+message RoomListToLobbyReq
+{
+	PmNet.ChamberIndexRQ request = 1;
+	uint64 player_idx = 2;			// 목록 요청자
+}
+
+message RoomListToLobbyRes
+{
+	PmNet.ChamberIndexRS response = 1;
+	uint64 player_idx = 2;			// 목록 요청자
+}
+
+// 손실제한 동기화
+message LostLimitSyncReq
+{
+	General.LossLimitProfile lost_limit = 4;		// 손실한도
+}
+
+message LostLimitSyncRes
+{
+	
+}
+
+message LostLimitSyncLobbyInitReq
+{
+	repeated General.LossLimitProfile lost_limits = 4;		// 손실한도 리스트 ( 20개씩 잘라서 보내자 )
+}
+
+message LostLimitSyncLobbyInitRes
+{
+	
+}
+
+message LostLimitUpdateReq
+{
+	uint64 account_idx = 1;							// account idx
+	int64 add_lost_chip = 2;						// 더해줄 칩 ( +, - 두값이라 그대로 더해주어야함 )
+	int32 add_price = 3;							// 더해줄 구매 금액
+	General.LossLimitProfile lost_limits = 4;				// 손실 제한 자체 업데이트
+	string account_guid = 5;						// ci
+	string refresh_time_of_lost_limit = 6;			// 리프레쉬 시간
+
+	bool update_lost_chip = 10;						// 손실 칩만 변경
+	bool update_price = 11;							// 구매 금액만 변경
+	bool update_lost_limit = 12;					// lost_limit 자체 변경
+	bool limit_out = 13;							// 손실 한도 초과
+}
+
+message LostLimitUpdateRes
+{
+
+}
+
+message SyncFriendInfoStatus
+{
+	uint64 player_idx = 1;							// 플레이어 고유 아이디
+	string playing_channel_id = 2;					// 테이블 게임을 진행중인 경우의 접속 게임
+	General.SlotCatalog slot_game_type = 3;			// 슬롯 게임을 진행중인 경우의 접속 게임
+	General.ContactState friend_status = 4;			// 친구 접속 상태
+	int32 server_id = 5;							// 마지막에 플레이 했던 서버를 저장해 둔다. ( 2번에서 플레이 하던 유저는 2번으로 바로 보내준다. )
+	uint64 player_chip = 6;							// 싱크할 칩 값
+	uint64 player_coin = 7;							// 싱크할 코인 값
+	uint64 player_safe_chip = 8;					// 싱크할 금고 칩 값
+	uint64 player_safe_coin = 9;					// 싱크할 금고 코인 값
+	General.ParticipantProfile player_data = 10;						// 플레이어
+}
+
+message MaintenanceMessage
+{
+	uint64 maintenance_idx = 1;
+    string title = 2;
+    string message = 3;
+    string version_min = 4;
+    string version_max = 5;
+    bool play_store = 6;
+    bool app_store = 7;
+    bool one_store = 8;
+    bool pc = 9;
+    string web_url = 10;
+    string img_file_name = 11;
+    string white_list = 12;
+    string start_date = 13;
+    string end_date = 14;
+    string reg_date = 15;
+	int32  noticetype = 16;
+	int32  exposure_type = 17;
+	int32  exposure_option = 18;
+}
+
+message Version
+{
+	int32 market = 1;
+    string title = 2;
+    string message = 3;
+    string version_min = 4;
+    string version_latest = 5;
+    string version_review = 6;
+    string reg_date = 7;
+}
+
+///////////////////////////// Administrative operations.
+
+enum DBType
+{
+	db_type_none = 0;
+	db_type_account = 1;
+	db_type_shard = 2;
+	db_type_log = 3;
+};
+
+enum ReplyType
+{
+	reply_type_none = 0;
+	reply_type_executed = 1;			// 다른서버에서 플레이어 쿼리 처리
+	reply_type_not_found_player = 2;	// 다른서버에서도 찾지 못함
+}
+
+ message OpsPlayerKickReq
+ {
+	 uint64 kick_player_idx = 1;		// 플레이어 player_idx 리스트
+	 string kick_platform_guid = 2;		// 플레이어의 platform_guid 리스트
+	 string query = 3;					// 플레이어 들마다 실행할 쿼리
+	 DBType db_type = 4;				// DB 타입
+
+	 // 서버 응답
+	 string ops_code = 7;				// 운영툴의 커맨드 처리용 key 발급
+ }
+ 
+ message OpsPlayerKickRes
+ {
+	 // 서버 응답
+	 int32 reply_count = 1;				// 응답 숫자 ( 운영툴서버와 연결된 1번 로비 서버만 처리, 로비서버 숫자 ( 현재는 2 ) 가 되면 처리 완료 )
+	 ReplyType reply_type = 2;			// 다른 서버의 응답 ( reply_type_executed , reply_type_not_found_player 둘중하나만 응답 가능 )
+	 string ops_code = 3;				// 운영툴의 커맨드 처리용 key 발급
+ }
+ 
+ // Market 별 Kick
+ message OpsMarketKickReq
+ {
+	 repeated General.StoreChannel kick_market_list = 1;	// Kick 할 마켓 목록
+ }
+
+ message OpsMarketKickRes
+ {
+
+ }
+
+  message OpsSlotEventDBSaveReq
+ {
+	 string start_date = 1;
+ }
+
+  message SyncGameStateUpdateNotiReq
+ {
+
+ }
+
+ message SyncPlayerLoginNoti
+{
+	uint64 player_idx = 1;		// 요청 플레이어 idx
+}
+
+ message SyncPlayerInfo
+{
+	uint64 player_idx = 1;		// 요청 플레이어 idx
+}
+
+enum FreeSpinTriggerInit
+{
+	FreespinTriggerInit = 0;
+	Rate = 1;
+}
+
+message SyncGameVersionReq
+{
+	string pw =1;
+}
+
+enum RatioType
+{
+	RatioType_up = 0;
+	RatioType_down = 1;
+	RatioType_Count = 2;
+}
+
+message SlotRatioControl
+{
+	uint32 Unit = 1;		// 1000 이면 천분율 / 10000 이면 만분율
+	uint32 Weight = 2;		// 기본 가중치
+	uint32 Increase = 3;	// 기본 가중치에 몇을 더 할지
+	uint32 Correct = 4;		// 단계가 올라갈 수록 추가 되는 값
+}
+
+message OpsLostLimitReq
+{
+	string account_guid= 1;		// 요청 플레이어 idx
+}
+
+enum ServiceStatusCode
+{
+	ServiceStatus_Success = 0;	// 정상 처리 완료
+	ServiceStatus_RequestTimedOut = 80000;	// 요청 처리 시간이 초과됨
+	ServiceStatus_UnexpectedCondition = 80001;	// 알 수 없는 처리 상태 발생
+	ServiceStatus_RequiredFieldMissing = 80002;	// 필수 입력 항목이 누락됨
+	ServiceStatus_ArenaClosed = 80003;	// 아레나 이용 가능 시간이 아님
+	ServiceStatus_RuntimeFault = 80100;	// 처리 중 예외 상황 발생
+	ServiceStatus_EndpointRejected = 80500;	// 요청 주소가 올바르지 않음
+	ServiceStatus_MessageEncodeFailed = 80501;	// 메시지 직렬화 처리 불가
+	ServiceStatus_PostBodyEncodeFailed = 80502;	// 전송 본문 직렬화 처리 불가
+	ServiceStatus_WebPayloadParseFailed = 80503;	// 웹 응답 데이터 해석 처리 불가
+	ServiceStatus_CacheAccountMissing = 81000;	// 캐시에서 사용자 계정을 찾을 수 없음
+	ServiceStatus_CacheUserDataMissing = 81001;	// 캐시에서 사용자 데이터를 찾을 수 없음
+	ServiceStatus_SessionTokenMismatch = 81002;	// 세션 식별 값이 일치하지 않음
+	ServiceStatus_TargetLookupFailed = 81007;	// 대상 정보를 찾을 수 없음
+	ServiceStatus_PlatformRejected = 81008;	// 플랫폼 값이 올바르지 않음
+	ServiceStatus_PurchaseRequestFailed = 81009;	// 구매 요청 처리 불가
+	ServiceStatus_PurchaseAlreadyCompleted = 81010;	// 이미 완료된 구매 요청
+	ServiceStatus_ConsumeRequestFailed = 81011;	// 소비 요청 처리 불가
+}
+
+enum BaselineConfigKey
+{
+	BaselineConfig_None = 0;	// 기본 설정 항목 없음
+	BaselineConfig_InitialChip = 1;	// 기본 지급 칩 설정
+	BaselineConfig_InitialCoin = 2;	// 기본 지급 코인 설정
+	BaselineConfig_ChipWalletLimit = 3;	// 칩 보유 총량 제한
+	BaselineConfig_ChipVaultLimit = 4;	// 보관 칩 한도 설정
+	BaselineConfig_CoinWalletLimit = 5;	// 코인 보유 총량 제한
+	BaselineConfig_CoinVaultLimit = 6;	// 보관 코인 한도 설정
+	BaselineConfig_ChipBetLimit = 7;	// 칩 베팅 상한 설정
+	BaselineConfig_SocialChipBetLimit = 8;	// 소셜 칩 베팅 상한 설정
+	BaselineConfig_RakebackLimit = 9;	// 레이크백 적립 한도 설정
+	BaselineConfig_RakebackDefaultRate = 10;	// 레이크백 기본 적립률 설정
+	BaselineConfig_ChipRefillThreshold = 11;	// 칩 충전 가능 기준값
+	BaselineConfig_ChipRefillNormalAmount = 12;	// 일반 칩 충전량 설정
+	BaselineConfig_ChipRefillStandardAmount = 13;	// 스탠다드 칩 충전량 설정
+	BaselineConfig_ChipRefillPremiumAmount = 14;	// 프리미엄 칩 충전량 설정
+	BaselineConfig_ChipRefillDailyCount = 15;	// 일일 칩 충전 횟수 설정
+	BaselineConfig_CoinRefillThreshold = 16;	// 코인 충전 가능 기준값
+	BaselineConfig_CoinRefillAmount = 17;	// 코인 충전량 설정
+	BaselineConfig_CoinRefillDailyCount = 18;	// 일일 코인 충전 횟수 설정
+	BaselineConfig_AliasMinLength = 19;	// 닉네임 최소 길이 설정
+	BaselineConfig_AliasMaxLength = 20;	// 닉네임 최대 길이 설정
+	BaselineConfig_MonthlyPurchaseLimit = 21;	// 월 결제 한도 설정
+	BaselineConfig_ClassDurationSeconds = 22;	// 등급 유지 기간 초 단위 설정
+	BaselineConfig_ClassRenewalDay = 23;	// 등급 갱신 기준일 설정
+	BaselineConfig_LostLimitValue = 24;	// 손실 한도값 리스트
+	BaselineConfig_LostLimitTime =25;	// 손실 한도 타임 리스트
+}
+
+enum AssetLedgerSource
+{
+	AssetLedger_None = 0;	// 재화 변경 출처 없음
+	AssetLedger_Game = 1;	// 게임 재화 변경
+	AssetLedger_Shop = 2;	// 상점 재화 변경
+	AssetLedger_Event = 3;	// 이벤트 재화 변경
+	AssetLedger_FreeCharge = 4;	// 무료 충전 재화 변경
+	AssetLedger_Vault = 5;	// 금고 재화 변경
+	AssetLedger_Rakeback = 6;	// 레이크백 재화 변경
+	AssetLedger_Mission = 7;	// 미션 재화 변경
+	AssetLedger_Achievement = 8;	// 업적 재화 변경
+	AssetLedger_Inbox = 9;	// 우편 재화 변경
+	AssetLedger_Refill = 10;	// 리필 재화 변경
+}
+
+enum ChannelPlayMode
+{
+	ChannelPlayMode_None = 0;	// 채널 플레이 모드 없음
+	ChannelPlayMode_Standard = 1;	// 일반 채널 플레이 모드
+	ChannelPlayMode_Lounge = 2;	// 라운지 채널 플레이 모드
+}
+
+enum VaultTransferDirection
+{
+	VaultTransfer_None = 0;	// 금고 이동 방향 없음
+	VaultTransfer_ToPlay = 1;	// 게임 지갑으로 출금
+	VaultTransfer_ToVault = 2;	// 금고로 보관
+}
+
+enum AccessLogKind
+{
+	AccessLog_None = 0;	// 접속 로그 종류 없음
+	AccessLog_Login = 1;	// 로그인 로그
+	AccessLog_Join = 2;	// 가입 로그
+	AccessLog_Restore = 3;	// 복구 로그
+}
+
+enum RecordPeriod
+{
+	RecordPeriod_None = 0;	// 전적 기간 없음
+	RecordPeriod_Daily = 1;	// 일간 전적 기간
+	RecordPeriod_Weekly = 2;	// 주간 전적 기간
+	RecordPeriod_Monthly = 3;	// 월간 전적 기간
+}
+
+enum ClientUpdatePolicy
+{
+	ClientUpdate_None = 0;	// 업데이트 정책 없음
+	ClientUpdate_Required = 1;	// 강제 업데이트 정책
+	ClientUpdate_Recommended = 2;	// 권장 업데이트 정책
+	ClientUpdate_CheckFailed = 10;	// 업데이트 확인 실패 정책
+}
+
+enum OverlayRatePreset
+{
+	OverlayRatePreset_None = 0;	// 오버레이 비율 없음
+	OverlayRatePreset_First = 1;	// 첫 번째 오버레이 비율
+}
+
+enum SpinCostGrade
+{
+	SpinCost_Normal = 0;	// 일반 스핀 비용 등급
+	SpinCost_Grand = 1;	// 그랜드 스핀 비용 등급
+}
+
+enum ReelStrip
+{
+	ReelStrip_None = 0;	// 릴 스트립 없음
+	ReelStrip_A = 1;	// 릴 스트립 A
+	ReelStrip_B = 2;	// 릴 스트립 B
+	ReelStrip_C = 3;	// 릴 스트립 C
+	ReelStrip_D = 4;	// 릴 스트립 D
+	ReelStrip_E = 5;	// 릴 스트립 E
+	ReelStrip_F = 6;	// 릴 스트립 F
+	ReelStrip_G = 7;	// 릴 스트립 G
+}
+
+// General.ParticipantProfile에서 분리된, 클라에는 내려가지 않는 서버 전용 플레이어 상태값.
+// Server.proto는 클라 코드젠 대상이 아니므로(buildMsgpack.bat CLIENT_PACKAGES 참고) 구조적으로 클라 전송이 차단됨.
+message ParticipantProfileInternal
+{
+	string ranking_reward_claimed_date = 1;	// 랭킹이벤트 리워드 받은 날짜
+	string kickout_cooldown_until = 2;			// 강퇴권 쿨타임
+	int32 coin_limit_mail_count = 3;			// 코인 한도 초과 우편 보상 지급 카운트
+	int32 friend_deletes_today = 4;			// 오늘 삭제한 친구 카운트. 하루 최대 10명 이상 삭제 못함
+	int64 holdem_daily_coins = 5;				// 홀덤 금일 누적 코인 ( 매일 0시 초기화 )
+	int64 holdem_daily_chips = 6;				// 홀덤 금일 누적 칩 ( 매일 0시 초기화 )
+	int64 lowbadugi_daily_coins = 7;			// 로우 바둑이 금일 누적 코인 ( 매일 0시 초기화 )
+	int64 lowbadugi_daily_chips = 8;			// 로우 바둑이 금일 누적 칩 ( 매일 0시 초기화 )
+	uint64 remaining_reel_coin = 9;			// 슬롯 짜투리 코인
+	int32 remaining_reel_moves = 10;			// 플레이어 슬롯 이동 남은 횟수
+	string monthly_reset_at = 11;				// 월별 갱신 시간 ( YYYY-MM-DD HH:mm:ss )
+	string weekly_reset_at = 12;				// 주별 갱신 시간 ( YYYY-MM-DD HH:mm:ss )
+	int32 blackjack_win_streak = 13;			// 블랙잭 연승기록
+}

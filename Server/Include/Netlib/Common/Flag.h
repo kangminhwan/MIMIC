@@ -1,0 +1,366 @@
+﻿#pragma once
+
+namespace CSDef
+{
+	enum EDef
+	{
+		NONE = -1,
+		MAX_IP_ADDRESS_LEN = 16, // IP 사이즈 최대
+		MAX_LOBBY_COUNT = 2,	// 로비 서버 갯수
+		MAX_SLOT_COUNT = 10,	// 슬롯 서버 최대
+		MAX_DNS_LEN = 128,		// DNS 이름 최대
+		MAX_BUFFER_64_LEN = 64,
+		MAX_BUFFER_128_LEN = 128,
+		MAX_OBSERVER_BUFFER_SIZE = 256,
+		MAX_BUFFER_256_LEN = 256,
+		MAX_ERROR_STRING_BUFFER_LEN = 512,
+		MAX_BUFFER_512_LEN = 512,
+		MAX_BUFFER_1024_LEN = 1024,
+		MAX_BUFFER_2048_LEN = 2048,
+		MAX_BUFFER_32K_LEN = 1024 * 32,
+		// ServerManager 관리
+		MAX_DEF_LEN_SERVER_NAME = 64,//size from global db, server_config table, 
+		MAX_PACKET_SERVER_LIST_CNT = 15,
+		MAX_SERVER_HASHMAP_SIZE = 30, //서버군의 연결에 씌이는 최대 서버 숫자 30개의 서버이하로 제한함
+		MAX_PACKET_UPDATE_STATUS_CNT = 200,
+		MAX_WEB_STRUCTURE_BUFFER_LEN = 1024 * 32,		//	32K로 설정
+		MAX_SESSIONID_LENGTH = 1024,
+		MAX_UTF8_CONVERT_LENGTH = 2048,
+		MAX_INI_DATA_SIZE = 3000,
+		MAX_ALLOW_GID = 1000,
+		MAX_ALLOW_SID = 10000,
+		VERSION_INFO_STRING_LEN = 20,//ManagerServer용
+		MAX_SC_SERVER_VERSION_INFO_STRING_LEN = 64,	//GameServer -> Client용
+		MAX_SHARD_DB_CNT = 10,						// GAME DB Sharding 구성은 최대 10대로 한다.
+	};
+
+	enum E_NETWORK_PACKET
+	{
+		E_NETWORK_PACKET_MAXSENDBUFFERLEN = 1024 * 8,
+	};
+
+	enum E_CS_ERROR_CODE
+	{
+		E_CS_ERROR_BEGIN = 2000,
+		E_CS_ERROR_USER_LIMIT_EXCEED,
+		E_CS_ERROR_END,
+	};
+
+	enum E_TIMER_DEFINE
+	{
+		E_NONE,
+		E_SERVER_INFO_CEHCK_TIMER,
+		E_PING_CHECK,
+		E_CHECK_PENDING_CONTEXT,
+		E_CHECK_PENDING_SESSION,
+		E_SERVERDATALOAD,
+		E_FRAME_SYNC,
+		E_TEN_TIMES_PER_SEC,
+		E_1_SEC,
+		E_ORDER_REPORT_ROOM_INFORMATION_NOW,
+		E_MATCH_TIME,
+		E_TIMER_DEFINE_CHECK_PENDING_CONTEXT,
+		E_UPDATE_HERO_SESSION_EXPIRE,
+		E_SERVER_ALIVE_CHECK,
+		E_SERVER_INIT,
+		E_PING_REQUEST,
+		E_CONCURRENT_USERS_LOG,
+		E_SESSION_CLEAR,
+		E_SLOT_RANKING_CACHING,
+		E_SLOTLOCK_SYNC,
+		E_5_SEC,
+		E_SQL_QUERY,
+	};
+
+	/*
+	단위는 ms(1000분의 1초) 입니다.
+	*/
+	enum E_TIMER_INTERVAL
+	{
+		E_33_MILLISECOND = 33,
+		E_80_MILLISECOND = 80,
+		E_100_MILLISECOND = 100,
+		E_1_SECOND = (1 * 1000),
+		E_5_SECOND = (5 * 1000),
+		E_10_SECOND = (10 * 1000),
+		E_60_SECOND = (60 * 1000),
+		E_1_HOUR = (3600 * 1000),
+		E_TIMER_INTERVAL_PING_CHECK = (10 * 1000),
+		E_TIMER_INTERVAL_CHECK_PENDING_CONTEXT = 7 * 1000, // 5 초로 확장합니다.
+		E_TIMER_INTERVAL_OUT_CONTEXT = 15 * 1000, // 15 튕김처리.
+		//E_TIMER_INTERVAL_CHECK_PENDING_CONTEXT = 60 * 1000, // 60 초로 확장합니다.
+		E_TIMER_INTERVAL_WEB_TIME_OUT = 2 * 1000,
+		E_TIMER_INTERVAL_MATCH_TIME = 1000,
+		E_IOS_PENDING_DELAY_TIME = (30 * 1000), // IOS는 백그라운드에서 핑을 못쏘기 때문에, 30초동안은 펜딩상태 체크하지 않습니다.
+	};
+};	
+
+namespace CSNet
+{
+	enum E_PROTOCOL
+	{
+		E_TCP = 1,
+		E_UDP
+	};
+
+	enum WEBREQ_METHOD
+	{
+		GET = 0,
+		POST = 1
+	};
+
+	enum ProtocolCommand
+	{
+		S_NONE = 0,
+
+		BEGIN_SERVER_COMMAND = 0x000000,
+
+		SYS_NET_CONNECT,						//	ClientConnect
+		SYS_NET_BUFFER_CONNECT,
+		SYS_NET_CONNECT_TO_SERVER,				//	Accept 할때 OutputBuffer를 받을 수 있는 상태로 Accept를 걸어놓고 이 소켓으로 접속을 하게 되었을때 호출되는 MsgID
+		SYS_NET_DISCONNECT,						//	DisConnect
+		SYS_NET_FORCE_DISCONNECT,
+		SYS_SCHEDULE_MSG,						//	Schedule Flag
+		SYS_NET_SESSION_LOG_OUT,				//	이 플래그가 호출되면 Context에 연결되어있는 Session을 정리 하는 루틴을 해야합니다.
+		SYS_NET_WEB_LOGIN_REQUEST_SUCCESS,		//	로그인 중에 웹질의가 성공적으로 오면 호출이되는 Flag
+		SYS_NET_PENDING_SESSION_CONNECT,		//	Pending Session으로 로그인에 성공했을때 호출됩니다. 이 때 쓰레드는 Session이 알고있는 CommandThread로 호출이 됩니다.
+
+		SYS_NET_CHANGE_COMMAND_INDEX_CONTEXT,
+
+		OBSERVER_LOG,
+
+		END_SERVER_COMMAND,
+
+		//Protocol 시작은 10000번부터입니다.
+	};
+};
+
+// Operation 분류
+enum E_IO_OPERATION
+{
+	E_IO_NONE = 0,
+	E_IO_ACCEPT,
+	E_IO_RECEIVE,
+	E_IO_SEND,
+	E_IO_DISCONNECT,
+	E_IO_FORCE_DISCONNECT,
+	E_IO_CONNECT
+};
+
+enum E_ERROR_SEND
+{
+	E_ERROR_SEND_OK = 1,
+	E_ERROR_SEND_ERROR,
+	E_ERROR_SEND_SEND_POOL_EMPTY,
+	E_ERROR_SEND_DATA_SIZE_OVER,
+	E_ERROR_SEND_WOULDBLOCK,
+	E_ERROR_SEND_SOCKET_ERROR,
+	E_ERROR_SEND_YET,
+	E_ERROR_SEND_FAILD_NO_TARGET,
+};
+
+enum EDBGroup
+{
+	EDB_NONE = -1,
+	EDB_COMMON,
+	EDB_SHARDING_1,
+	EDB_SHARDING_10 = 10,
+	EDB_LOG_1,
+	EDB_LOG_10 = 20,
+	EDB_WEBADMIN,
+	EDB_COMMON_LOG,
+	EDB_GLOBAL,
+	EDB_CNT
+};
+
+enum EStringColor
+{
+	BLACK,
+	RED,
+	BLUE,
+	GREEN,
+	SYSTEM,
+	TRACING,
+	PACKET_TRACE,
+	EStringColorCnt,
+};
+
+enum EStringBkColor
+{
+	STRANGE,	// white 비스무리, 약간노란색
+	MYBK		// 옅은회색
+};
+
+enum LOG_GRADE
+{
+	LOG_NONE = 0,
+	LOG_INFO,		// 정보수준
+	LOG_TRACE,		// 디버깅용 추적로그 (_DEBUG only)
+	LOG_PACKET_TRACE,// 패킷 로그 저장용 (_DEBUG only)
+	LOG_NOR,		// 일반적인 로그
+	LOG_CRI,		// 위험한 로그
+	LOG_SYSTEM,		// 시스템 로그
+	LOG_ALERT,		// Slack 등으로 메시지 알림을 호출하기 위한, 최상위 로그 등급
+	LOG_GRADE_CNT,
+};
+
+// 서버의 종류
+enum E_SERVER_TYPE
+{
+	NONE_SERVER = -1,
+	BASE_SERVER = 0,
+	FRONT_SERVER = 1,	// 점검 관리 서버
+	OOPS_SERVER = 2,	// 관리툴 서버
+	PLATFORM_SERVER = 3,// 결제 서버 ( 플랫폼 서버 )
+	LOBBY_SERVER = 4,	// 로비 서버
+	SLOT_SERVER = 5,	// 슬롯 서버
+	DB_SERVER = 6,		// DB 서버 ( Mysql )
+	REDIS_DB = 7,		// Redis
+	/*
+
+	*/
+	//===================
+	SERVER_TYPE_MAX,// LAST
+};
+
+// 서버 환경설정 파일 아이디
+enum Configures
+{
+	GAME_CONF = 1,
+	GAME_DB_CONF,
+	LOGIN_CONF
+};
+
+// 서버타입
+enum ServerTypes
+{
+	SERVER_LOGIN = 1,
+	SERVER_GAMEDB,
+	SERVER_GAME
+};
+
+// 세션타입
+enum Sessions
+{
+	SESSION_NONE = 1,
+	SESSION_SERVER,
+	SESSION_CLIENT,
+	SESSION_DUMMY,	// DUMMY CLIENT
+	SESSION_AGENT,	// AGENT
+	SESSION_TOOL,	// 관리툴
+	SESSION_QA_TOOL, // QA 툴
+	SESSION_MAX,
+};
+
+// 디비연결아이디
+enum Databases
+{
+	DB_MEMBER = 1,
+	DB_GAME,
+	DB_LOG
+};
+
+// 글자색상 결정
+enum TextColors
+{
+	CT_WHITE = 1,
+	CT_BLACK,
+	CT_RED,
+	CT_BLUE,
+	CT_YELLOW
+};
+
+enum EventID
+{
+	EVENT_CONNECT = 1,
+	EVENT_RECEIVE,
+	EVENT_CLOSE,
+	EVENT_FORCE_CLOSE,
+	EVENT_CONNECT_TO_SERVER
+};
+
+enum E_IOCP_CONNECTOR_STATUS
+{
+	E_IOCP_CONNECTOR_STATUS_NONE,
+	E_IOCP_CONNECTOR_STATUS_TRY_CONNECT,	// 접속 시도중
+	E_IOCP_CONNECTOR_STATUS_DISCONNECTED,	// 접속 종료상태
+	E_IOCP_CONNECTOR_STATUS_CONNECTED,		// 접속중
+
+	E_IOCP_CONNECTOR_STATUS_MAX
+};
+
+//Context에서 사용하고있는 상태값입니다.
+enum E_CONNECT_STATUS
+{
+	E_CONNECT_NONE,
+	E_CONNECT_CONNECTED,				//	접속 중
+	E_CONNECT_CONVERTING_TO_PENDING,	//	대기 상태로 변환중
+	E_CONNECT_FORCE_DISCONNECT,			//	Force DisConnect 한 상태
+	E_CONNECT_TIME_WAIT,				//	Time Wait 상태
+	E_CONNECT_DISCONNECTED,				//	접속 종료
+};
+
+//Context Type
+enum E_CONTEXT_TYPE
+{
+	E_CONTEXT_NONE,
+	E_CONTEXT_CLIENT,
+	E_CONTEXT_SERVER,
+	E_CONTEXT_MAX
+};
+
+enum E_SESSION_STATUS
+{
+	E_SESSION_STATUS_NONE,
+	E_SESSION_STATUS_CONNECTED,		// 세션 접속중
+	E_SESSION_STATUS_PENDING,		// 세션 대기 상태
+	E_SESSION_STATUS_DISCONNECTING,	// 세션 연결 해제 중
+	E_SESSION_STATUS_DISCONNECT,	// 세션 접속종료
+};
+
+//wininet 에서 사용하고있는 flag입니다.
+enum E_WIN_INET_ERROR
+{
+	E_WIN_INET_ERROR_OK = 1,
+	E_WIN_INET_ERROR_ERROR,
+	E_WIN_INET_ERROR_NO_ACCOUNT,
+	E_WIN_INET_ERROR_NO_CHARACTER,
+	E_WIN_INET_ERROR_IP_READ,
+	E_WIN_INET_ERROR_URL_PARSING,//URL 파싱오류
+	E_WIN_INET_ERROR_URL_PARSING_EMPTY,//URL파싱오류, NULL 데이터
+	E_WIN_INET_ERROR_URL_PARSING_PORT,//URL파싱오류, NULL 데이터
+	E_WIN_INET_ERROR_INTERNET_SESSION,//인터넷 세션 획득 실패
+	E_WIN_INET_ERROR_INTERNET_CONNECT,//인터넷 커넥션 실패
+	E_WIN_INET_ERROR_INTERNET_OPEN_REQUEST,//인터넷 리퀘스트 실패
+	E_WIN_INET_ERROR_INTERNET_SEND_REQUEST,//인터넷 리퀘스트 실패
+	E_WIN_INET_ERROR_INTERNET_READ,
+	E_WIN_INET_ERROR_NO_DATA,
+	E_WIN_INET_ERROR_INTERNET_QUERYINFO,//인터넷 리퀘스트 결과 조회 실패
+};
+
+enum E_SERVER_THREAD_TYPE
+{
+	E_SERVER_THREAD_TYPE_COMMAND,
+	E_SERVER_THREAD_TYPE_WORKER,
+	E_SERVER_THREAD_TYPE_LOG,
+	E_SERVER_THREAD_TYPE_Web,
+	E_SERVER_THREAD_TYPE_MAX,		// [FBI Warning] THREAD 타입은 MAX뒤에 작성하지 마시오
+};
+
+enum thread_type
+{
+	ty_all,
+	ty_cur_thread,
+	ty_another_thread,
+};
+
+enum E_SERVER_STAGE
+{
+	LOCAL = 0,
+	DEV   = 1,
+	ALPHA = 2,
+	LIVE  = 3,
+	E_SERVER_STAGE_MAX,
+
+};
+

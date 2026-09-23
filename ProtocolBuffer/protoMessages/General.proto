@@ -1,0 +1,1428 @@
+﻿syntax = "proto3";
+
+package General;
+
+enum SysPacketID
+{
+	SysPacket_None = 0;	// 시스템 경로 시작점
+	SysPacket_Heartbeat = 1;	// 연결 상태 확인 신호
+	SysPacket_HeartbeatAck = 2;   // 하트비트 응답 신호
+	SysPacket_TimeSync = 3;       // 서버-클라 시간 동기화
+	SysPacket_ProtocolVersion = 4;        // 접속 초기 프로토콜/빌드 버전 교환
+	SysPacket_Latency = 5;        // RTT(핑) 측정 응답
+	SysPacket_ForceClose = 6;     // 서버 강제 종료 통지 (점검/제재 등)
+	SysPacket_End = 1000;	// 시스템 경로 종료값
+}
+
+enum PacketID
+{
+	Packet_None = 0;	// 기본 경로
+	Packet_CoreFault = 1;	// 내부 처리 실패 알림
+	Packet_RequestFault = 2;	// 요청 처리 실패 알림
+	Packet_IdentityEnroll = 7001;	// 본인 확인 후 계정 생성
+	Packet_ChannelBind = 7002;	// 계정 채널 연결
+	Packet_ChannelLookup = 7003;	// 동일 식별값 채널 조회
+	Packet_ChannelPrecheck = 7004;	// 가입 전 채널 수 확인
+	Packet_DirectEnroll = 7005;	// 자체 계정 등록
+	Packet_LinkProbe = 7006;	// 연결 상태 확인 요청
+	Packet_LinkEcho = 7007;	// 연결 상태 확인 응답
+	Packet_AccessOpen = 7101;	// 접속 시작
+	Packet_AccessResume = 7102;	// 접속 복구
+	Packet_ProfileClose = 7103;	// 계정 종료 신청
+	Packet_ProfileCloseCancel = 7104;	// 계정 종료 신청 취소
+	Packet_AliasUpdate = 7201;	// 표시 이름 변경
+	Packet_LocalSecretUpdate = 7202;	// 자체 비밀번호 변경
+	Packet_SecondKeyReset = 7203;	// 보조 비밀번호 초기화
+	Packet_TermsAccept = 7204;	// 이용 약관 동의 갱신
+	Packet_CredentialExtend = 7205;	// 인증 만료 시간 연장
+	Packet_AccessClose = 7301;	// 접속 종료
+	Packet_AccessDuplicateClose = 7302;	// 중복 접속 정리
+	Packet_ClientRevisionNotice = 7401;	// 클라이언트 버전 안내
+	Packet_NotifyOptionUpdate = 7402;	// 알림 설정 변경
+	Packet_NodeTransfer = 7501;	// 서비스 노드 이동
+	Packet_LobbyRedirect = 7502;	// 로비 이동 안내
+	Packet_ServiceNotice = 7601;	// 서비스 안내 전달
+	Packet_BoardNotice = 7602;	// 공지 전달
+	Packet_PriorityNotice = 7603;	// 우선 안내 전달
+	Packet_ProfileRead = 7701;	// 플레이어 정보 조회
+	Packet_RoundOpen = 3001;	// 진행 라운드 시작
+	Packet_StakeSubmit = 3002;	// 참여 금액 제출
+	Packet_RoundStateNotice = 3003;	// 진행 상태 변경 안내
+	Packet_RoundOutcome = 3004;	// 진행 결과 전달
+	Packet_SeatSlotMove = 3005;	// 진행 중 슬롯 자리 이동
+	Packet_InitialDeal = 3101;	// 초기 카드 배분
+	Packet_TurnNotice = 3102;	// 진행 순서 안내
+	Packet_LeadSeatNotice = 3103;	// 대표 자리 변경 안내
+	Packet_CardSwap = 3104;	// 카드 교체 처리
+	Packet_ResultViewDone = 3105;	// 결과 화면 확인 완료
+	Packet_TableOwnerNotice = 3106;	// 방 대표 변경 안내
+	Packet_RabbitHunt = 3107;	// 홀덤 래빗헌팅 요청/결과
+	Packet_ShowHand = 3108;	// 홀덤 내 패 보여주기 요청/결과
+	Packet_BoardCardReveal = 3201;	// 공용 카드 공개
+	Packet_FinalReveal = 3202;	// 최종 공개 진행
+	Packet_SideStakeNotice = 3203;	// 부가 참여 안내
+	Packet_BaccaratDeal = 3301;	// 바카라 카드 배분
+	Packet_StakeCancel = 3302;	// 참여 금액 취소
+	Packet_BaccaratPassStake = 3303;	// 바카라 패스 선택
+	Packet_BaccaratDoubleStake = 3304;	// 바카라 배수 선택
+	Packet_BaccaratRepeatStake = 3305;	// 이전 바카라 선택 반복
+	Packet_BaccaratSpecialNotice = 3306;	// 바카라 특수 결과 안내
+	Packet_ShoeRemainNotice = 3307;	// 남은 카드 수 안내
+	Packet_BlackjackDeal = 3401;	// 블랙잭 카드 배분
+	Packet_BlackjackAction = 3402;	// 블랙잭 진행 액션
+	Packet_BlackjackHandSync = 3403;	// 블랙잭 패 정보 갱신
+	Packet_BlackjackOfferNotice = 3404;	// 블랙잭 선택 안내
+	Packet_BlackjackSeatSplit = 3405;	// 블랙잭 보조 자리 생성
+	Packet_BlackjackSideOutcome = 3406;	// 블랙잭 부가 결과
+	Packet_SpaceEnter = 2001;	// 공간 입장
+	Packet_SpaceLeave = 2002;	// 공간 퇴장
+	Packet_SpaceCreate = 2003;	// 공간 생성
+	Packet_PrivateSpaceCreate = 2004;	// 초대 공간 생성
+	Packet_SpaceMove = 2005;	// 공간 이동
+	Packet_RoundJoin = 2006;	// 라운드 참여
+	Packet_RoundJoinCancel = 2007;	// 라운드 참여 취소
+	Packet_LeaveReserve = 2008;	// 퇴장 예약
+	Packet_UserRemove = 2009;	// 사용자 내보내기
+	Packet_UserRemoveCancel = 2010;	// 사용자 내보내기 취소
+	Packet_SpaceList = 2011;	// 공간 목록 조회
+	Packet_WatcherCountNotice = 2012;	// 관전 인원 안내
+	Packet_WatcherModeEnter = 2013;	// 관전 모드 전환
+	Packet_WatcherModeCancel = 2014;	// 관전 전환 취소
+	Packet_WatcherEnter = 2015;	// 관전 입장
+	Packet_SlotSeatClear = 2016;	// 슬롯 자리 사용자 정리
+	Packet_EmoteSend = 2017;	// 감정 표현 전달
+	Packet_ReelAccess = 1001;	// 릴 서비스 접속
+	Packet_ReelOpen = 1002;	// 릴 게임 진입
+	Packet_ReelClose = 1003;	// 릴 게임 종료
+	Packet_ReelRoll = 1101;	// 릴 회전 요청
+	Packet_PickSelect = 1102;	// 픽 선택 진행
+	Packet_WheelRoll = 1103;	// 휠 회전 요청
+	Packet_ChoiceRoll = 1104;	// 선택형 회전 요청
+	Packet_RollAck = 1201;	// 회전 상태 확인
+	Packet_PlayCreditRefresh = 1301;	// 플레이 재화 갱신
+	Packet_AvatarEquip = 4001;	// 아바타 장착
+	Packet_SecondKeySet = 4002;	// 보조 비밀번호 설정
+	Packet_SecondKeyChange = 4003;	// 보조 비밀번호 변경
+	Packet_SecondKeyClear = 4004;	// 보조 비밀번호 해제
+	Packet_ProfileNotice = 4005;	// 플레이어 정보 안내
+	Packet_LobbyRefresh = 4101;	// 로비 데이터 갱신
+	Packet_ReelLobbyRefresh = 4102;	// 릴 로비 데이터 갱신
+	Packet_DailyReset = 4201;	// 일일 데이터 갱신
+	Packet_InboxList = 4301;	// 보관함 목록 조회
+	Packet_InboxOpen = 4302;	// 보관함 항목 열기
+	Packet_AttendanceClaim = 4401;	// 접속 보상 수령
+	Packet_TaskList = 4501;	// 과제 목록 조회
+	Packet_TaskRewardClaim = 4502;	// 과제 보상 수령
+	Packet_FreeCreditClaim = 4601;	// 무료 재화 수령
+	Packet_PointWithdraw = 4701;	// 적립 포인트 인출
+	Packet_StorePurchase = 4801;	// 상점 구매
+	Packet_LossCapUpdate = 4901;	// 손실 한도 변경
+	Packet_LossCapTimeCheck = 4902;	// 손실 한도 시간 확인
+	Packet_LossCapOptionsList = 4903;	// 손실 한도 선택 가능 옵션 조회
+	Packet_VaultDeposit = 5001;	// 금고 입금
+	Packet_VaultWithdraw = 5002;	// 금고 출금
+	Packet_SponsorView = 5101;	// 광고 시청 처리
+	Packet_BalanceCapPopup = 5201;	// 결과 화면 재화 한도 안내
+	Packet_LossCapPopup = 5202;	// 결과 화면 손실 한도 안내
+	Packet_ContactAdd = 5301;	// 친구 추가
+	Packet_ContactRemove = 5302;	// 친구 삭제
+	Packet_LobbyRoster = 5303;	// 로비 사용자 목록
+	Packet_ContactList = 5304;	// 친구 목록
+	Packet_ProfileSearch = 5305;	// 플레이어 검색
+	Packet_ConsoleAccess = 9001;	// 관리 도구 접속
+	Packet_ConsoleDeckPreset = 9002;	// 카드 구성 검증 설정
+	Packet_ConsoleBaccaratPreset = 9003;	// 바카라 검증 설정
+	Packet_ConsoleBlackjackPreset = 9004;	// 블랙잭 검증 설정
+	Packet_ConsoleBoardPreset = 9005;	// 공용 카드 검증 설정
+	Packet_ConsoleAliasLookup = 9006;	// 별칭 기반 사용자 조회
+	Packet_ConsoleBuyCapReset = 9007;	// 구매 한도 초기화
+	Packet_ConsoleLossCapReset = 9008;	// 손실 한도 초기화
+	Packet_ConsoleProfileLoad = 9009;	// 사용자 데이터 로드
+	Packet_ConsoleProfileSave = 9010;	// 사용자 데이터 저장
+	Packet_ConsoleStateReloadNotice = 9011;	// 상태 데이터 재로딩 안내
+	Packet_ConsoleReelPreset = 9012;	// 릴 검증 설정
+	Packet_ConsoleInboxState = 9013;	// 보관함 상태 변경
+	Packet_ConsoleDailyExpiry = 9014;	// 일일 만료 상태 변경
+	Packet_ConsoleSpaceNumber = 9015;	// 공간 번호 조회
+	Packet_PlatformVerify = 9501;	// 플랫폼 검증 요청
+	Packet_StoreVerify = 9502;	// 상점 구매 검증 요청
+	Packet_NodeAuthRequest = 8001;	// 노드 인증 요청
+	Packet_NodeAuthResponse = 8002;	// 노드 인증 응답
+	Packet_NodeSpaceSync = 8003;	// 노드 공간 목록 동기화
+	Packet_NodeSpaceQuery = 8004;	// 노드 공간 목록 요청
+	Packet_NodeSpaceQueryResult = 8005;	// 노드 공간 목록 응답
+	Packet_NodeLossCapSync = 8006;	// 노드 손실 한도 동기화
+	Packet_NodeLossCapBootstrap = 8007;	// 노드 손실 한도 초기 전달
+	Packet_NodeLossCapUpdate = 8008;	// 노드 손실 한도 갱신
+	Packet_NodeContactSync = 8009;	// 노드 친구 정보 동기화
+	Packet_NodeContactStateSync = 8010;	// 노드 친구 상태 동기화
+	Packet_NodeUserRemoveCommand = 8011;	// 노드 사용자 제거 명령
+	Packet_NodeMarketRemoveCommand = 8012;	// 노드 마켓 제거 명령
+	Packet_NodeAccessNotice = 8013;	// 노드 접속 안내
+	Packet_NodeProfileSync = 8014;	// 노드 사용자 정보 동기화
+	Packet_NodeUserRemoveResult = 8015;	// 노드 사용자 제거 결과
+	Packet_NodeStateReloadNotice = 8016;	// 노드 상태 재로딩 안내
+	Packet_NodeRevisionNotice = 8017;	// 노드 버전 변경 안내
+	Packet_NodeHeartbeat = 8018;	// 노드 간 하트비트 (서버↔서버 핑)
+	Packet_AdminUserRemove = 8501;	// 관리 사용자 제거
+	Packet_AdminMarketRemove = 8502;	// 관리 마켓 제거
+	Packet_AdminReelEventStore = 8503;	// 관리 릴 이벤트 저장
+	Packet_AdminStateReloadNotice = 8504;	// 관리 상태 재로딩 안내
+	Packet_AdminLossCapUpdate = 8505;	// 관리 손실 한도 갱신
+	Packet_LabCreditUpdate = 9901;	// 검증 환경 재화 변경
+	Packet_LabSpaceEnter = 9902;	// 검증 환경 공간 입장
+	Packet_LabCardSwap = 9903;	// 검증 환경 카드 교체
+	Packet_LabReelPreset = 9904;	// 검증 환경 릴 설정
+	Packet_LabDisconnect = 9905;	// 검증 환경 연결 종료
+	Packet_End = 99999;	// 일반 경로 끝 지점
+}
+
+enum ResultCode
+{
+	Result_Success = 0; // 정상 처리 완료
+	Result_PurchasePriceTypeRejected = 1; // 올바르지 않은 타입
+	Result_ProductIdRejected = 2; // 올바르지 않은 ProductID
+	Result_HitCooldownActive = 3; // Hit 쿨타임이 지나지 않아서 처리 불가 했습니다.
+	Result_ReceiptValidationFailed = 4; // 영수증 검증에 처리 불가
+	Result_NullParameterFault = 5; // 인자로 전달된 변수가 null일때 나오는 Exception입니다.
+	Result_AvatarNotOwned = 6; // 소유하지 않은 아바타 입니다.
+	Result_SelectSpinDataMissing = 7; // 셀렉스핀 while 조건 넘었을 때
+	Result_SecondKeyInputRequired = 8; // 2차 비밀번호 입력이 요구됨
+	Result_PaymentSignatureRequired = 9; // 구글 결제시 영수 정보 요구됨
+	Result_DailyResetWindowClosed = 10; // Daily 초기화할 시간이 아닙니다.
+	Result_SecondKeyPolicyBlocked = 11; // 2차 비밀번호 생성 정책에 어긋남.
+	Result_SecondKeyMismatch = 12; // 2차 비밀번호가 일치 하지 않습니다.
+	Result_ParameterRejected = 13; // ArgumentException 종류의 상위 Exception 입니다.
+	Result_SecondKeySameAsBefore = 14; // 2차 비밀번호 이전과 빈경하려는 비밀번호가 동일 합니다.
+	Result_AliasUpdateFailed = 15; // 닉네임 변경 처리 불가
+	Result_AccountProvisionFailed = 16; // 계정 생성 처리 불가
+	Result_StorePurchaseFailed = 17; // 상점 구매 처리 불가
+	Result_TransportParseFailed = 18; // 수신 데이터 해석 처리 불가
+	Result_SessionExpired = 19; // 유효 시간이 지난 세션
+	Result_PreviousBetAlreadyCalled = 20; // (바카라) 이전 베팅을 이미 사용 하였다.
+	Result_IdentityAuthLookupFailed = 21; // 나이스 본인 계정 검색 처리 불가
+	Result_ChannelLookupFailed = 22; // 채널 검색에 처리 불가 했습니다.
+	Result_BankerSideAlreadySelected = 23; // (바카라) Banker 측에 이미 베팅이 존재한다.
+	Result_TargetRejected = 24; // 부적당한 대상
+	Result_FriendListLoadFailed = 25; // 친구 리스트 가져오기 처리 불가
+	Result_ClosedAccountBlocked = 26; // 탈퇴 완료 계정 ( 게임 접속 허용하지 않음 )
+	Result_UnexpectedCondition = 27; // 알수없는 처리 문제
+	Result_AccessRestrictionActive = 28; // 제재 기간 중입니다.
+	Result_PurchaseCountLimitReached = 29; // 현재 물품을 살수 있는 제한이 걸려있습니다.
+	Result_RoomProvisionFailed = 31; // 방 생성 처리 불가 일반
+	Result_SeatQueueAlreadyJoined = 32; // 착석 대기자 처리 문제
+	Result_WatchReservationCancelFailed = 33; // 관전 예약 취소 처리 불가
+	Result_ProductLookupFailed = 34; // 상점 Product Id로 검색에 처리 불가 했습니다.
+	Result_RestrictionLookupFailed = 35; // 제재 기간 검색 처리 불가
+	Result_ChannelNodeDisconnected = 36; // 로비 서버 채널 처리 문제. ( 로비서버간 접속 되지 않은 경우 )
+	Result_SeatMoveFailed = 37; // 방에서의 슬롯 이동 처리 불가
+	Result_RakebackBalanceInsufficient = 38; // 레이크백 잔고 충분하지 않음
+	Result_PlayStartFailed = 39; // 플레이 시작 일반적인 처리 문제
+	Result_SplitLimitReached = 40; // 스플릿을 더 이상 할 수 없다.
+	Result_TransportSendWouldBlock = 41; // 소켓 전송이 즉시 처리되지 않음
+	Result_RoomCapacityReached = 42; // 방이 가득참
+	Result_SelfBallotRejected = 43; // 자기 자신에게 투표 할 수 없음.
+	Result_RoomEntryFailed = 44; // 방조인 처리 불가 ( 일반적인 )
+	Result_ProductSaleClosed = 45; // 현재 판매 되지않는 상품
+	Result_SubSeatLimitReached = 46; // 서브플레이어의 수가 최대치입니다.
+	Result_PreviousBetCallFailed = 47; // (바카라) 일반 적인 이전 베팅 사용 처리 불가
+	Result_DoubleDownAfterHitRejected = 48; // Hit 를 한 이후에는 더블다운이 불가능
+	Result_TurnOwnershipMismatch = 49; // 유저 턴 처리 문제
+	Result_TransportUserLimitReached = 50; // 접속 허용 인원 초과
+	Result_BallotRecordMissing = 51; // 투표 가 존재하지 않음.
+	Result_BallotPlayerCountInsufficient = 52; // 투표를 위한 플레이어 충분하지 않음
+	Result_TotalBetUpdateFailed = 53; // 토털벳 변경 처리 불가
+	Result_PurchaseSignatureMissing = 54; // 올바르지 않은 데이터
+	Result_SpinAlreadyRunning = 55; // 스핀 진행 중 요청됨
+	Result_ProductIdMissing = 56; // Product ID 를 찾을수 없음.
+	Result_PageIndexRequired = 57; // 요청 페이지가 없음.
+	Result_SeedBalanceInsufficient = 58; // Seed 보유 재화 충분하지 않음
+	Result_WatchReservationFailed = 59; // 관전 예약 처리 불가 ( 일반적인 )
+	Result_LoginCredentialRejected = 60; // 올바르지 않은 계정입니다.
+	Result_AccountClosureFailed = 61; // 게임 탈퇴 처리 불가
+	Result_MailRemoveFailed = 62; // 메일 삭제 처리 불가
+	Result_ChannelGuidMissing = 63; // Platform Guid 를 찾을 수 없음.
+	Result_OwnerActionRequired = 65; // Boss만 가능한 조작임
+	Result_DuplicateAccessBlocked = 66; // 이미 사용 중접속입니다(게임 접속 처리 불가).
+	Result_TransportServerFault = 67; // 전송 처리 문제 시작
+	Result_RoomUnavailable = 68; // NoRoom 방이 더 없음, 또는 쓰레드 이전 요구됨
+	Result_SeatMoveModeUnsupported = 69; // 슬롯 이동을 지원하지 않는 게임 모드 입니다.
+	Result_ActionRejected = 70; // 유효하지 않은 베팅 조작
+	Result_AccountClosureCancelAvailable = 71; // 탈퇴 취소 가능
+	Result_KickCooldownActive = 72; // 강퇴권이 쿨입니다.
+	Result_StorageFault = 73; // DB 처리 문제
+	Result_SelfLossLimitCooldownActive = 74; // 손실한도 자가 제한 시간이 아직 남아 있습니다.
+	Result_SafeChipCapacityReached = 75; // 안전 금고 칩 금고 한도 도달
+	Result_SafeCoinBalanceInsufficient = 76; // 안전 금고 코인 충분하지 않음
+	Result_FoldedPlayerActionRejected = 77; // Die 한 사람이 조작을 하려고 하였다.
+	Result_ChipBalanceInsufficient = 78; // 칩 충분하지 않음
+	Result_AnotherReceiptAlreadyBound = 79; // 다른 영수증이 존대한다는 뜻입니다.
+	Result_ClientRevisionBlocked = 80; // 클라이언트 버전 처리 문제
+	Result_TransportEntityRejected = 81; // 엔티티 정보가 올바르지 않음
+	Result_ReceiptPayloadMissing = 82; // 올바르지 않은 영수증 데이터
+	Result_WatchModeRequired = 83; // 관람 모드 일때만 가능 합니다.
+	Result_RoomStateNotWaiting = 84; // 방이 대기 상태가 아님
+	Result_PlayTimeLimitChangeReserved = 85; // 손실한도 제한 시간 변경이 예약 되어 있습니다.
+	Result_RoomEntryTargetGone = 86; // 조인하려는 방이 사라진 경우
+	Result_PlayerCountInsufficient = 87; // 플레이 인원 충분하지 않음
+	Result_FormatParseFault = 88; // 포멧 형식이 틀릴때 나오는 Exception입니다.
+	Result_PacketNotSupported = 89; // 없는 패킷
+	Result_TaskRewardGrantFailed = 90; // 미션, 업적 보상 처리 불가
+	Result_SecondKeyResetRequired = 91; // 2차 비밀번호 초기화가 요구됨. ( 본인 인증 화면 으로 보낸다. )
+	Result_VerifiedAccountRequired = 92; // Create Platform 처리시에, 본인 인증 계정 없음 알림 ( 본인 인증을 하셔야 합니다. )
+	Result_WatchReservationAlreadyExists = 93; // 관전 예약이 이미 되어 있다.
+	Result_TotalBetMismatch = 94; // 토털 베팅 값이 서로 맞지 않음
+	Result_BillingTokenRejected = 95; // 올바르지 않은 빌링 토큰
+	Result_RoomAlreadyJoined = 97; // 이미 조인한 방이 존재함
+	Result_ExternalAuthFailed = 98; // 구글 인증 처리 불가
+	Result_PlayerAlreadyKicked = 99; // 이미 강퇴 된 유저 입니다.
+	Result_SplitPairRequired = 100; // 카드가 Pair 가 아님
+	Result_TransportSerializeFailed = 101; // 전송 Serialize 처리 문제
+	Result_SeatMoveLimitReached = 102; // 슬롯 이동 더 이상 불가
+	Result_TransportLoginRequired = 103; // 로그인 전 전송 요청 차단
+	Result_TransportSendFailed = 104; // 전송 처리 실패
+	Result_LossLimitPlayerBlocked = 105; // 손실한도가 발생한 플레이어 입니다.
+	Result_SeatReservationCapacityReached = 106; // 착석자만석
+	Result_TransportWebRequestFailed = 107; // 웹 요청 처리 중 전송 오류 발생
+	Result_BbingAlreadyUsed = 108; // Bbing 은 한번만 가능
+	Result_TransportDuplicateLogin = 109; // 중복 로그인 세션 감지
+	Result_GemBalanceInsufficient = 110; // 다이이가 충분하지 않음합니다.
+	Result_RequiredPayloadOmitted = 111; // 하나 이상의 필드가 없음.
+	Result_LocalAccessIdRequired = 112; // 자체 계정 ID 가 없음.
+	Result_WatchTransferPlayerMissing = 113; // 플레이어가 없어 관전 예약을 할 수 없음.
+	Result_RequestTimedOut = 114; // 해당 요청에 대해 TimeOut 발생, 시스템 처리 문제
+	Result_FriendRoomProvisionFailed = 115; // 친구방 생성 일반적인 처리 불가
+	Result_TransportSendPoolEmpty = 116; // 전송 풀에 사용 가능한 항목 없음
+	Result_BallotAlreadySubmitted = 117; // 이방에서 이미 투표를 진행한적이 있다.
+	Result_PlayReservationAlreadyExists = 118; // 이미 플레이 대기중 상태 이다.
+	Result_BalanceInsufficient = 119; // 재화가 충분하지 않음 합니다.
+	Result_PurchaseAmountLimitExceeded = 120; // 구매 제한 금액을 넘게 구매 할 수 없음.
+	Result_PickGameDataMissing = 121; // 픽게임 while 조건 넘었을 때
+	Result_ChannelBindingFailed = 122; // CreatePlatform 처리 불가
+	Result_SameIdentityRoomEntryBlocked = 123; // 같은CI라 방진입 처리 불가
+	Result_FriendAddFailed = 124; // 친구 추가 처리 불가
+	Result_TransportNodeTransferRequired = 125; // 서버 이동 처리가 요구됨
+	Result_IdentityAuthTimedOut = 126; // 나이스 본인 인증 시간 초과
+	Result_FundsInsufficient = 127; // 보유 재화 충분하지 않음
+	Result_PayableGoodsAlreadyGranted = 128; // 물품 지급이 완료된 상품입니다.
+	Result_RoomLookupFailed = 129; // 방찾기 처리 불가
+	Result_IdentityAndChannelRequired = 130; // 입력 파라미터에 Ci 와 Platform Guid 가 요구됨.
+	Result_RankingEventDataMissing = 131; // 랭킹이벤트 데이터가 없다
+	Result_CoinBalanceInsufficient = 132; // 코인 충분하지 않음
+	Result_KickTargetNotMarked = 133; // 강퇴 된 플에이어가 아닙니다.
+	Result_LocalAccessIdAlreadyUsed = 134; // 자체 계정 자체 로그인 아이디 이미 사용 중
+	Result_TermsConsentRequired = 135; // 약관 동의 팝업창 요구됨
+	Result_PassBetAmountMissing = 136; // 플레이어가 1명인 상태에서 Pass 요청시에 베팅 금액이 없으면 Pass 처리 불가
+	Result_GuidLookupFailed = 137; // Guid 검색 처리 불가 ( account, platform )
+	Result_TransportSendPayloadTooLarge = 138; // 전송 데이터 크기 제한 초과
+	Result_RoomNumberRequired = 139; // 방번호가 없음.
+	Result_IdentityAuthExpired = 140; // 나이스 본인 계정 인증 기간 유효 시간 경과 ( 최대 1 년 )
+	Result_ReceiptProcessingInProgress = 141; // 지금 영수증을 처리하고있습니다.
+	Result_SelfKickRejected = 142; // 자기 자신은 킥 불가
+	Result_LossLimitChangeQuotaReached = 143; // 손실 한도 월 2회 변경 제한
+	Result_EmptySeatLookupFailed = 144; // 비어 있는 슬롯을 찾는데 처리 불가 했습니다.
+	Result_AccountAlreadyProvisioned = 145; // 이미 생성된 계정
+	Result_KickTicketInsufficient = 146; // 강퇴권이 없음.
+	Result_ChipCapacityReached = 147; // 칩 보유 한도 도달
+	Result_FriendRemoveFailed = 148; // 친구 삭제 처리 불가
+	Result_AccountCreationLimitReached = 149; // 생성 가능한 계정 카운트 오버 ( 5개 )
+	Result_PrimaryBetRequired = 150; // 서브 플레이어가 베팅 하려는 경우 메인 플레이어가 베팅 하지 않았으면 처리 불가 처리
+	Result_AppleSignatureMissing = 151; // 애플 구매시에 signature 가 비어 있습니다.
+	Result_SafeChipBalanceInsufficient = 152; // 안전 금고 칩 충분하지 않음
+	Result_BetWindowClosed = 153; // 더이상 베팅 불가능
+	Result_RoomLeaveFailed = 154; // 방나가기 처리 불가 ( 일반적인 )
+	Result_TransportSendPending = 155; // 이전 전송 처리 대기 중
+	Result_ContentFaultRangeBegin = 156; // 게임 내부 에서 사용되는 처리 문제코드의 시작
+	Result_WatchAllowedInLoungeOnly = 157; // 라운지 채널에서만 관전이 허용 됩니다.
+	Result_SeatMoveQuotaReached = 158; // 슬롯 이동 횟수 소진
+	Result_PlayModeMismatch = 159; // 인플레이 분류이 요청과 맞지 않음
+	Result_InsuranceStepRejected = 160; // 인슈어런스 && 이븐머니를 처리하기 위한 게임 스텝이 아님
+	Result_PickGameDataRejected = 161; // 픽게임 데이터가 올바르지 않음
+	Result_ReceiptBundleIdMismatch = 162; // 서버가 가지고있는 번들 아이디랑 클라이언트가 보내온 영수증의 번들아이디가 다릅니다.
+	Result_IdentityVerificationFailed = 163; // CI 검증처리 불가
+	Result_DailyFriendRemoveLimitReached = 164; // 일일 친구 삭제 카운트 오버
+	Result_PlayerSeatAlreadyJoined = 165; // 이미 플레이어로 방에 들어와 있다.
+	Result_ToolAuthKeyRejected = 166; // 검증 툴 인증 처리 불가
+	Result_LossLimitLoadFailed = 167; // 손실한도 로딩 처리 불가
+	Result_PlayerLookupFailed = 168; // 플레이어 검색 처리 불가
+	Result_SeatMoveAlreadyReserved = 169; // 자리 이동 예약자 처리 문제
+	Result_RoomEntryKickBlocked = 170; // 조인하려는 방에서 킥을 당했던 플레이어 이다.
+	Result_ReplayAlreadyPrepared = 171; // 리플레이 정보가 이미 준비됨
+	Result_SplitRankRangeRejected = 172; // 카드 번호가 1 ~ 10 이 아니라서 처리 불가
+	Result_BetUpperBoundExceeded = 173; // Max Bet 보유 재화 제한을 넘어서 베팅하려는 시도 처리 불가
+	Result_LocalAccessIdPolicyBlocked = 174; // 자체 계정 ID 생성 정책 위반
+	Result_EmptyBetRejected = 175; // 0원배팅
+	Result_ActionStateClosed = 176; // 이미 완료된 액션입니다.
+	Result_ReceiptAlreadyProcessed = 177; // 이미 처리된 영수증 입니다.
+	Result_AliasUpdateCooldownActive = 178; // 닉네임 변경 금지 시간이 아직 남아 있음
+	Result_KickHostPermissionRequired = 179; // 방장만 킥이 가능 합니다.
+	Result_ProductIdNotProvided = 180; // 클라이언트가 Product ID를 보내지 않았습니다.
+	Result_PlayStepMismatch = 181; // 게임 스텝 처리 문제
+	Result_BetSubmitFailed = 182; // 베팅 처리 불가 일반적인 처리 문제
+	Result_UsedReceiptPurchaseRejected = 183; // 구매 처리 불가, 이미 지급된 영수증 입니다.
+	Result_LocalAccessPasswordMismatch = 184; // 자체 계정 자체 로그인 비밀번호 맞지 않음
+	Result_LocalAccessSecretPolicyBlocked = 185; // 자체 계정 PASSWORD 정책 위반
+	Result_LocalAccessRestricted = 186; // 자체 계정 자체 로그인 이용 제한
+	Result_AccountLookupFailed = 187; // 계정 정보를 찾을 수 없음.
+	Result_ReceiptKeyMissing = 188; // 올바르지 않은 Receipt Key
+	Result_LossLimitChangeAlreadyReserved = 189; // 손실 한도 변경이 예약 되어 있습니다.
+	Result_PacketIDRejected = 190; // 허용되지 않는 패킷 식별자
+	Result_ChannelIdRejected = 191; // 채널 아이디 처리 문제
+	Result_TransportEncodeFailed = 192; // 프로토콜 직렬화 처리 실패
+	Result_PickGameEntryRequired = 193; // 픽게임 진입이 먼저 요구됨
+	Result_ChannelCreationLimitReached = 194; // CI로 더 이상 생성 불가능
+	Result_SubSeatOccupied = 195; // 요청 받은 슬롯은 비어 있지 않습니다.
+	Result_SplitActionFailed = 196; // 일반 적인 스플릿 처리 처리 문제
+	Result_BetRequired = 197; // 베팅을 하지 않았다.
+	Result_ServicePaused = 198; // 서비스 점검 진행 중
+	Result_SlotAccessClosed = 199; // 슬롯 오픈 X
+	Result_ParticipationRequired = 200; // 게임에 참여 부터 하세요
+	Result_AliasFormatRejected = 202; // 올바르지 않은 닉네임
+	Result_SlotEntryRequired = 203; // 슬롯 게임 진입 부터 하세요.
+	Result_LossLimitUpdateFailed = 204; // 손실한도 변경 처리 불가
+	Result_SeatAlreadyOccupied = 205; // 슬롯 사용 처리 불가 ( 다른 플레이어가 점유 )
+	Result_SeatTargetOccupied = 206; // 이동하려는 슬롯이 비어 있지 않음
+	Result_TransportPayloadRejected = 207; // 전송 데이터 형식이 올바르지 않음
+	Result_LocalAccessRetryLimitReached = 208; // 자체 계정 로그인 비밀번호를 5회 이상 틀림, 본인 인증 요구됨
+	Result_ChannelAuthTokenRequired = 209; // 플랫폼 인증 코드가 반드시 요구됨.
+	Result_BallotPlayCountInsufficient = 210; // 플레이 횟수가 충분하지 않음합니다.
+	Result_FundsEntryLimitExceeded = 211; // 보유 재화 과다 ( 방 입장시 요구됨 이상의 보유 재화 를 가진 경우 )
+	Result_SessionIdentityMismatch = 212; // 세션 정보가 일치하지 않습니다.
+	Result_BetOptionRejected = 213; // 가능한 베팅이 아님
+	Result_CoinCapacityReached = 214; // 코인 한도 도달
+	Result_StreamPayloadMissing = 215; // 데이터가 없음. (패킷이 도착하고 StreamReader 로 읽었을때 데이터가 없으면 전송되는 처리 문제메시지입니다.)
+	Result_ChannelIdentifierRejected = 216; // 유효 하지 않은 플랫폼 아이디 입니다.
+	Result_BallotTypeUnknown = 217; // 알 수 없는 투표 타입 입니다.
+	Result_PageSizeRequired = 218; // 페이지 사이즈가 없음.
+	Result_TransportSessionMissing = 219; // 대상 세션을 찾을 수 없음
+	Result_SessionFault = 220; // 일반적인 Session 처리 문제
+	Result_TransportSendSocketFault = 221; // 소켓 전송 오류 발생
+	Result_BallotSubmitFailed = 222; // 통상적인 투표 처리 불가
+	Result_TransportAccountIdUnset = 223; // 계정 식별자가 설정되지 않음
+	Result_DeveloperPayloadRejected = 224; // 올바르지 않은 Developer Pay Load
+	Result_TransportAccountIdRejected = 225; // 계정 식별자 값이 올바르지 않음
+	Result_LocalAccessIdMissing = 226; // 자체 계정 자체 로그인 아이디 검색 처리 불가
+	Result_ItemIndexRejected = 227; // 허용되지 않는 아이템 인덱스
+	Result_FriendSearchFailed = 228; // 닉네임 검색 처리 불가
+	Result_BetStepRejected = 229; // 베팅할수 있는 스텝이 아님
+	Result_OrderIdRejected = 230; // Order ID 가 없음. AOS 전용
+	Result_SplitSequenceRejected = 231; // 블랙잭 스플릿 어레이 번호 처리 문제
+	Result_PlayerSideAlreadySelected = 232; // (바카라) ParticipantProfile 측에 이미 베팅이 존재한다.
+	Result_FreeChargeRequestFailed = 233; // 무료 충전소 요청 처리 불가
+	Result_PlayQueueAlreadyJoined = 234; // 플레이 큐에 등록되어 있다.
+	Result_MembershipStillActive = 235; // 현재 멤버쉽의 기간이 남아 있습니다.
+	Result_AliasAlreadyUsed = 236; // 이미 사용 중된 닉네임
+	Result_RoomPasswordRejected = 237; // 방 비밀번호가 올바르지 않음
+	Result_SpectatorLimitReached = 238; // 관전 인원 한도 초과
+	Result_TournamentEntryClosed = 239; // 토너먼트 접수 마감
+	Result_TournamentAlreadyRegistered = 240; // 이미 등록된 토너먼트
+	Result_LeaderboardLoadFailed = 241; // 리더보드 조회 실패
+	Result_DailyMissionAlreadyClaimed = 242; // 일일 미션 보상 중복 수령
+	Result_AttendanceAlreadyChecked = 243; // 출석 이미 체크됨
+	Result_VipTierRequired = 244; // 필요한 VIP 등급 미달
+	Result_CouponCodeInvalid = 245; // 쿠폰 코드가 올바르지 않음
+	Result_CouponAlreadyRedeemed = 246; // 쿠폰 이미 사용됨
+	Result_MailAttachmentExpired = 247; // 메일 첨부 유효기간 만료
+	Result_FriendRequestAlreadySent = 248; // 이미 보낸 친구 요청
+	Result_FriendLimitReached = 249; // 친구 등록 한도 초과
+	Result_BlockListFull = 250; // 차단 목록 가득 참
+	Result_ChatMuteActive = 251; // 채팅 금지 상태
+	Result_ProfanityFilterBlocked = 252; // 금칙어 필터에 의해 차단됨
+	Result_AvatarSlotLocked = 253; // 잠긴 아바타 슬롯
+	Result_NicknameAlreadyUsed = 254; // 이미 사용 중인 닉네임
+	Result_NicknameChangeCooldownActive = 255; // 닉네임 변경 쿨타임
+	Result_DeviceLimitReached = 256; // 등록 가능 기기 수 초과
+	Result_DeviceBindingRequired = 257; // 기기 인증 필요
+	Result_ServerMaintenanceActive = 258; // 서버 점검 중
+	Result_ClientVersionObsolete = 259; // 클라이언트 버전이 낮음
+	Result_RegionRestricted = 260; // 지역 제한
+	Result_AgeVerificationRequired = 261; // 연령 인증 필요
+	Result_ParentalConsentRequired = 262; // 법정대리인 동의 필요
+	Result_SelfExclusionActive = 263; // 자기 제한(셀프 배제) 상태
+	Result_ChipTransferBlocked = 264; // 칩 전송 차단됨
+	Result_PromotionExpired = 265; // 프로모션 기간 만료
+	Result_RewardPoolExhausted = 266; // 보상 재고 소진
+}
+
+enum NoticeChannelType
+{
+	NoticeChannel_None = 0;	// 알림 채널 없음
+	NoticeChannel_AdminTool = 1;	// 운영 도구 알림 채널
+	NoticeChannel_ServiceCare = 2;	// 점검 및 유지 관리 알림 채널
+	NoticeChannel_Event = 3;	// 이벤트 알림 채널
+}
+
+enum PlayCategory
+{
+	PlayCategory_None = 0;
+	PlayCategory_TexasHoldem = 1;
+	PlayCategory_LowBadugi = 2;
+	PlayCategory_Blackjack = 3;
+	PlayCategory_Baccarat = 4;
+	PlayCategory_SlotFixed = 5;
+	PlayCategory_SlotTumble = 6;
+	PlayCategory_SlotLine = 7;
+	PlayCategory_SlotLinkedWays = 8;
+	PlayCategory_SlotMaximumWays = 9;
+}
+
+enum SlotCatalog
+{
+	PM_SLOT_None = 0;
+
+	PM_SLOT_001 = 1; // Line
+	PM_SLOT_002 = 2; // Tumble
+	PM_SLOT_003 = 3; // Line
+	PM_SLOT_004 = 4; // Tumble
+	PM_SLOT_005 = 5; // Line
+	PM_SLOT_006 = 6; // Line
+	PM_SLOT_007 = 7; // Line
+	PM_SLOT_008 = 8; // Linked
+	PM_SLOT_009 = 9; // Line
+	PM_SLOT_010 = 10; // Tumble
+	PM_SLOT_011 = 11; // Maximum
+	PM_SLOT_012 = 12; // Maximum
+}
+
+enum AssetKind
+{
+	AssetKind_None = 0;	// 재화 종류 없음
+	AssetKind_Chip = 1;	// 칩 재화
+	AssetKind_Coin = 2;	// 코인 재화
+	AssetKind_Gem = 3;	// 젬 재화
+}
+
+enum RoomAccessMode
+{
+	RoomAccess_None = 0;	// 방 접근 방식 없음
+	RoomAccess_Public = 1;	// 일반 공개 방
+	RoomAccess_FriendOnly = 2;	// 친구 전용 방
+	RoomAccess_Private = 3;	// 비밀번호 전용 방
+}
+
+enum HandRevealScope
+{
+	HandRevealScope_None = 0;	// 미선택 (공개 안함)
+	HandRevealScope_Left = 1;	// 왼쪽 카드만 공개
+	HandRevealScope_Right = 2;	// 오른쪽 카드만 공개
+	HandRevealScope_All = 3;	// 모든 카드 공개
+}
+
+enum BetPolicy
+{
+	BetPolicy_None = 0;	// 베팅 정책 없음
+	BetPolicy_HalfStake = 1;	// 하프 베팅 정책
+	BetPolicy_FullStake = 2;	// 풀 베팅 정책
+	BetPolicy_HoldemOpening = 3;	// 홀덤 시작 베팅 정책
+	BetPolicy_HoldemStandard = 4;	// 홀덤 일반 베팅 정책
+	BetPolicy_HoldemThreeBet = 5;	// 홀덤 3베팅 정책
+	BetPolicy_HoldemFourBet = 6;	// 홀덤 4베팅 정책
+	BetPolicy_HoldemAllIn = 7;	// 홀덤 올인 베팅 정책
+}
+
+enum RuleProfile
+{
+	RuleProfile_None = 0;	// 규칙 프로필 없음
+	RuleProfile_Standard = 1;	// 바둑이 및 홀덤 일반 규칙
+	RuleProfile_Blind = 2;	// 블라인드 규칙
+	RuleProfile_HoldemChoice = 3;	// 홀덤 초이스 규칙
+	RuleProfile_Turbo = 4;	// 터보 규칙
+}
+
+enum LobbyButtonPreset
+{
+	LobbyButton_None = 0;	// 로비 버튼 프리셋 없음
+	LobbyButton_LowBadugiHalf = 1;	// 라운지 및 일반 로우바둑이 하프 버튼
+	LobbyButton_LowBadugiFull = 2;	// 라운지 로우바둑이 풀 버튼
+	LobbyButton_LowBadugiFriend = 3;	// 일반 로우바둑이 친구방 버튼
+	LobbyButton_Holdem = 4;	// 홀덤 버튼
+}
+
+enum IdentityCheckType
+{
+	IdentityCheck_None = 0;	// 본인 확인 
+	IdentityCheck_KoreanResident = 1;	// 한국 
+	IdentityCheck_EnglishResident = 2;	// 영어
+	IdentityCheck_External = 1000;	// 그 외 본인 확인 방식
+	IdentityCheck_Foreigner = 1001;	// 외국인 본인 확인
+}
+
+enum StoreChannel
+{
+	StoreChannel_None = 0;	// 스토어 채널 없음
+	StoreChannel_GooglePlay = 1;	// 구글 플레이 스토어 채널
+	StoreChannel_AppleAppStore = 2;	// 애플 앱스토어 채널
+	StoreChannel_OneStore = 3;	// 원스토어 채널
+	StoreChannel_PC = 4;	// PC 채널
+	StoreChannel_Galaxy = 5;	// 갤럭시 스토어 채널
+}
+
+enum AccessChannelType
+{
+	AccessChannel_None = 0;	// 접속 채널 없음
+
+	AccessChannel_Android = 1;	// 구글 기반 안드로이드 접속 채널
+	AccessChannel_IOS = 2;	// 애플 기반 iOS 접속 채널
+	AccessChannel_PC = 3;	// PC 접속 채널
+	AccessChannel_LocalAccount = 4;	// 자체 계정 인증 채널
+	AccessChannel_Ayve = 5;	// 자체 계정 인증 채널
+}
+
+enum BallotKind
+{
+	BallotKind_None = 0;	// 투표 종류 없음
+	BallotKind_KickOut = 1;	// 강제 퇴장 투표
+	BallotKind_PauseGame = 2;	// 게임 일시정지 투표
+}
+
+enum RoomState
+{
+	RoomState_None = 0;	// 방 상태 없음
+	RoomState_Waiting = 1;	// 플레이어 입장 대기 상태
+	RoomState_InPlay = 2;	// 플레이 진행 중 상태
+	RoomState_Closed = 3;	// 방 종료 상태
+}
+
+enum BenefitTier
+{
+	BenefitTier_None = 0;	// 혜택 등급 없음
+	BenefitTier_Basic = 1;	// 기본 혜택 등급
+	BenefitTier_Standard = 2;	// 스탠다드 혜택 등급
+	BenefitTier_Premium = 3;	// 프리미엄 혜택 등급
+	BenefitTier_Business = 4;	// 비즈니스 혜택 등급
+	BenefitTier_First = 5;		// Fist 혜택 등급
+	BenefitTier_Vip = 6;	// VIP 혜택 등급
+}
+
+// PlayPhase enum moved to Server.proto (server-internal only, not shipped to client wire schema).
+// Client-facing wire fields that used to carry this type now carry int32 (see PmNet.proto,
+// RoomSnapshot.play_phase below) — same numeric values, no client/server value remap needed.
+
+enum TableAction
+{
+	TableAction_None = 0;	// 테이블 액션 없음													
+
+	TableAction_Call = 101;	// 이전 참여 금액을 맞추는 액션										// 콜 : 앞사람의 베팅 금액과 동일한 금액 베팅 (CALL)
+	TableAction_SeedOnly = 102;	// 기본 판돈만 참여하는 액션									// 삥 : 시드금액(기본판돈)만 베팅 (보스만 가능), 교환 간 1회만 가능함
+	TableAction_DoubleRaise = 103;	// 이전 참여 금액의 두 배 액션								// 따당 : 앞 사람이 베팅한 금액의 2배를 베팅함 (CALL*2)
+	TableAction_HalfPot = 104;	// 전체 판돈의 50퍼센트 기준 액션								// 하프 : 전체 판돈의 50%를 베팅, (POT+CALL)*1/2+CALL
+	TableAction_GiveUp = 105;	// 진행 포기 액션													// 다이 : 해당 게임을 포기함
+	TableAction_Check = 106;	// 금액 추가 없이 순서를 넘기는 액션								// 체크 : 베팅하지 않고, 다음 플레이어 베팅 순으로 넘김(0)
+	TableAction_QuarterPot = 107;	// 전체 판돈의 25퍼센트 기준 액션								// 전체 판돈의 25%를 베팅, (POT+CALL)*(1/4)+CALL
+	TableAction_Maximum = 108;	// 허용 범위 내 최대 액션									    // 맥스 : 플레이어의 베팅 한도 내 최대 베팅
+
+	TableAction_SmallBlind = 201;	// 홀덤 스몰 블라인드 액션									// 홀덤 : SB
+	TableAction_BigBlind = 202;	// 홀덤 빅 블라인드 액션										// 홀덤 : BB
+	TableAction_FullPot = 203;	// 전체 판돈 기준 액션											// 전체 판돈의 100%를 베팅, (POT+CALL) +CALL
+	TableAction_AllIn = 204;	// 보유 금액 전체 참여 액션											// 올인 : 가진 돈의 전부를 베팅
+
+	TableAction_TableMaxStake = 301;	// 채널 최대 베팅 액션										// 채널에 설정된 Max Bet
+	TableAction_TableStakeA = 302;	// 테이블 기준 베팅 A										// 베팅 금액은 채널 마다 다름
+	TableAction_TableStakeB = 303;	// 테이블 기준 베팅 B										// 베팅 금액은 채널 마다 다름
+	TableAction_TableStakeC = 304;	// 테이블 기준 베팅 C										// 베팅 금액은 채널 마다 다름
+	TableAction_TableStakeD = 305;	// 테이블 기준 베팅 D										// 베팅 금액은 채널 마다 다름
+
+	TableAction_PairPlus = 401;	// 페어 플러스 액션												//PP 
+}																								
+
+enum HandRank
+{
+	HandRank_None = 0;	// 족보 없음
+	HandRank_HoldemBegin = 1;	// 홀덤 족보 시작 구분값
+	HandRank_HoldemRoyalStraightFlush = 2;	// 홀덤 로얄 스트레이트 플러시 족보
+	HandRank_HoldemStraightFlush = 3;	// 홀덤 스트레이트 플러시 족보
+	HandRank_HoldemFourOfKind = 4;	// 홀덤 포카드 족보
+	HandRank_HoldemFullHouse = 5;	// 홀덤 풀하우스 족보
+	HandRank_HoldemFlush = 6;	// 홀덤 플러시 족보
+	HandRank_HoldemStraight = 7;	// 홀덤 스트레이트 족보
+	HandRank_HoldemThreeOfKind = 8;	// 홀덤 트리플 족보
+	HandRank_HoldemTwoPair = 9;	// 홀덤 투페어 족보
+	HandRank_HoldemOnePair = 10;	// 홀덤 원페어 족보
+	HandRank_HoldemHighCard = 11;	// 홀덤 하이카드 족보
+	HandRank_LowGolf = 12;	// 로우바둑이 골프 족보
+	HandRank_LowSecond = 13;	// 로우바둑이 세컨드 족보
+	HandRank_LowThird = 14;	// 로우바둑이 써드 족보
+	HandRank_LowFiveMade = 15;	// 로우바둑이 5메이드 족보
+	HandRank_LowSixMade = 16;	// 로우바둑이 6메이드 족보
+	HandRank_LowSevenMade = 17;	// 로우바둑이 7메이드 족보
+	HandRank_LowEightMade = 18;	// 로우바둑이 8메이드 족보
+	HandRank_LowNineMade = 19;	// 로우바둑이 9메이드 족보
+	HandRank_LowTenMade = 20;	// 로우바둑이 10메이드 족보
+	HandRank_LowJackMade = 21;	// 로우바둑이 J메이드 족보
+	HandRank_LowQueenMade = 22;	// 로우바둑이 Q메이드 족보
+	HandRank_LowKingMade = 23;	// 로우바둑이 K메이드 족보
+	HandRank_LowBase = 24;	// 로우바둑이 베이스 족보
+	HandRank_LowTwoBase = 25;	// 로우바둑이 투베이스 족보
+	HandRank_LowTop = 26;	// 로우바둑이 탑 족보
+	HandRank_BlackjackBegin = 27;	// 블랙잭 족보 시작 구분값
+	HandRank_BlackjackNatural = 28;	// 블랙잭 내추럴 족보
+	HandRank_BlackjackTwentyOne = 29;	// 블랙잭 21점 족보
+	HandRank_BlackjackPush = 30;	// 블랙잭 무승부 족보
+	HandRank_BlackjackBust = 31;	// 블랙잭 버스트 족보
+	HandRank_BaccaratBegin = 32;	// 바카라 족보 시작 구분값
+	HandRank_BaccaratPlayerPair = 33;	// 바카라 플레이어 페어 족보
+	HandRank_BaccaratPlayer = 34;	// 바카라 플레이어 족보
+	HandRank_BaccaratTie = 35;	// 바카라 타이 족보
+	HandRank_BaccaratBanker = 36;	// 바카라 뱅커 족보이
+	HandRank_BaccaratBankerPair = 37;	// 바카라 뱅커 페어 족보
+	HandRank_RecordGiveUp = 38;	// 전적 표기용 다이 족보
+	HandRank_RecordFold = 39;	// 전적 표기용 폴드 족보
+	HandRank_RiverWin = 40;	// 리버승리
+	HandRank_Hidden = 41; // 히든 족보
+	HandRank_End = 50; //종료
+}
+
+enum CardSuit
+{
+	CardSuit_None = 0;	// 카드 문양 없음
+	CardSuit_Heart = 1;	// 하트 문양
+	CardSuit_Diamond = 2;	// 다이아몬드 문양
+	CardSuit_Club = 3;	// 클럽 문양
+	CardSuit_Spade = 4;	// 스페이드 문양
+	CardSuit_BaccaratStop = 5;	// 바카라 전용 스톱 카드
+	CardSuit_Joker = 6;	// 조커 카드
+}
+
+enum CardRank
+{
+	CardRank_None = 0;	// 카드 숫자 없음
+	CardRank_Ace = 1;	// 에이스 카드
+	CardRank_Two = 2;	// 2 카드
+	CardRank_Three = 3;	// 3 카드
+	CardRank_Four = 4;	// 4 카드
+	CardRank_Five = 5;	// 5 카드
+	CardRank_Six = 6;	// 6 카드
+	CardRank_Seven = 7;	// 7 카드
+	CardRank_Eight = 8;	// 8 카드
+	CardRank_Nine = 9;	// 9 카드
+	CardRank_Ten = 10;	// 10 카드
+	CardRank_Jack = 11;	// 잭 카드
+	CardRank_Queen = 12;	// 퀸 카드
+	CardRank_King = 13;	// 킹 카드
+}
+
+enum BlackjackChoice
+{
+	BlackjackChoice_None = 0;	// 블랙잭 선택 없음
+	BlackjackChoice_Hit = 1;	// 카드 추가 선택
+	BlackjackChoice_Stand = 2;	// 카드 유지 선택
+	BlackjackChoice_Split = 3;	// 패 분리 선택
+	BlackjackChoice_DoubleDown = 4;	// 더블다운 선택
+	BlackjackChoice_Surrender = 5;	// 서렌더 선택
+	BlackjackChoice_Insurance = 6;	// 인슈어런스 선택
+	BlackjackChoice_EvenMoney = 7;	// 이븐머니 선택
+	BlackjackChoice_Refuse = 8;	// 거절 선택
+	BlackjackChoice_LateSurrender = 9;                      // 레이트 서렌더 선택
+    BlackjackChoice_EarlySurrender = 10;            // 얼리 서렌더 선택
+    BlackjackChoice_Resplit = 11;                           // 재분리(리스플릿) 선택
+    BlackjackChoice_ResplitAces = 12;                       // 에이스 재분리 선택
+    BlackjackChoice_DoubleAfterSplit = 13;          // 스플릿 후 더블다운 선택
+    BlackjackChoice_HitAfterSplitAce = 14;          // 에이스 스플릿 후 히트 선택
+    BlackjackChoice_DeclineInsurance = 15;          // 인슈어런스 거절 선택
+    BlackjackChoice_SideBetPerfectPairs = 16;       // 퍼펙트페어 사이드벳 선택
+    BlackjackChoice_SideBet21Plus3 = 17;            // 21+3 사이드벳 선택
+    BlackjackChoice_RebetSameHand = 18;             // 이전 베팅 동일 재베팅 선택
+    BlackjackChoice_AutoStand17 = 19;                       // 17 이상 자동 스탠드 선택
+    BlackjackChoice_ConfirmBust = 20;                       // 버스트 확인 선택
+}
+
+enum SlotStakePreset
+{
+	SlotStake_None = 0;	// 슬롯 베팅 프리셋 없음
+	SlotStake_1K = 1;	// 1천 단위 슬롯 베팅
+	SlotStake_10K = 2;	// 1만 단위 슬롯 베팅
+	SlotStake_50K = 3;	// 5만 단위 슬롯 베팅
+	SlotStake_100K = 4;	// 10만 단위 슬롯 베팅
+	SlotStake_500K = 5;	// 50만 단위 슬롯 베팅
+	SlotStake_1M = 6;	// 100만 단위 슬롯 베팅
+	SlotStake_3M = 7;	// 300만 단위 슬롯 베팅
+	SlotStake_5M = 8;	// 500만 단위 슬롯 베팅
+	SlotStake_10M = 9;	// 1천만 단위 슬롯 베팅
+	SlotStake_30M = 10;	// 3천만 단위 슬롯 베팅
+	SlotStake_50M = 11;	// 5천만 단위 슬롯 베팅
+}
+
+enum SymbolCode
+{
+	SymbolCode_None = 0;	// 릴 심볼 없음
+
+	SymbolCode_ScatterA = 1;	// Scatter 계열 A 심볼
+	SymbolCode_ScatterB = 2;	// Scatter 계열 B 심볼
+	SymbolCode_ScatterC = 3;	// Scatter 계열 C 심볼
+	SymbolCode_ScatterD = 4;	// Scatter 계열 D 심볼
+	SymbolCode_ScatterE = 5;	// Scatter 계열 E 심볼
+	SymbolCode_ScatterF = 6;	// Scatter 계열 F 심볼
+
+	SymbolCode_WildA = 11;	// Wild 계열 A 심볼
+	SymbolCode_WildB = 12;	// Wild 계열 B 심볼
+	SymbolCode_WildC = 13;	// Wild 계열 C 심볼
+	SymbolCode_WildD = 14;	// Wild 계열 D 심볼
+	SymbolCode_WildE = 15;	// Wild 계열 E 심볼
+	SymbolCode_WildF = 16;	// Wild 계열 F 심볼
+
+	SymbolCode_LowA = 21;	// Low 계열 A 심볼
+	SymbolCode_LowB = 22;	// Low 계열 B 심볼
+	SymbolCode_LowC = 23;	// Low 계열 C 심볼
+	SymbolCode_LowD = 24;	// Low 계열 D 심볼
+	SymbolCode_LowE = 25;	// Low 계열 E 심볼
+	SymbolCode_LowF = 26;	// Low 계열 F 심볼
+
+	SymbolCode_MidA = 31;	// Middle 계열 A 심볼
+	SymbolCode_MidB = 32;	// Middle 계열 B 심볼
+	SymbolCode_MidC = 33;	// Middle 계열 C 심볼
+	SymbolCode_MidD = 34;	// Middle 계열 D 심볼
+	SymbolCode_MidE = 35;	// Middle 계열 E 심볼
+	SymbolCode_MidF = 36;	// Middle 계열 F 심볼
+
+	SymbolCode_HighA = 41;	// High 계열 A 심볼
+	SymbolCode_HighB = 42;	// High 계열 B 심볼
+	SymbolCode_HighC = 43;	// High 계열 C 심볼
+	SymbolCode_HighD = 44;	// High 계열 D 심볼
+	SymbolCode_HighE = 45;	// High 계열 E 심볼
+	SymbolCode_HighF = 46;	// High 계열 F 심볼
+
+	SymbolCode_MysteryA = 51;	// Mystery 계열 A 심볼
+	SymbolCode_MysteryB = 52;	// Mystery 계열 B 심볼
+	SymbolCode_MysteryC = 53;	// Mystery 계열 C 심볼
+	SymbolCode_MysteryD = 54;	// Mystery 계열 D 심볼
+	SymbolCode_MysteryE = 55;	// Mystery 계열 E 심볼
+	SymbolCode_MysteryF = 56;	// Mystery 계열 F 심볼
+
+	SymbolCode_UpgradeA = 61;	// 업그레이드 A 심볼
+	SymbolCode_UpgradeB = 62;	// 업그레이드 B 심볼
+
+	SymbolCode_CoinA = 71;	// Coin 계열 A 심볼
+	SymbolCode_CoinB = 72;	// Coin 계열 B 심볼
+	SymbolCode_CoinC = 73;	// Coin 계열 C 심볼
+	SymbolCode_CoinD = 74;	// Coin 계열 D 심볼
+	SymbolCode_CoinE = 75;	// Coin 계열 E 심볼
+	SymbolCode_CoinF = 76;	// Coin 계열 F 심볼
+
+	SymbolCode_CatcherA = 81;	// Catcher 계열 A 심볼
+	SymbolCode_CatcherB = 82;	// Catcher 계열 B 심볼
+	SymbolCode_CatcherC = 83;	// Catcher 계열 C 심볼
+	SymbolCode_CatcherD = 84;	// Catcher 계열 D 심볼
+	SymbolCode_CatcherE = 85;	// Catcher 계열 E 심볼
+	SymbolCode_CatcherF = 86;	// Catcher 계열 F 심볼
+
+	SymbolCode_MultiplierA = 91;	// Multiplier 계열 A 심볼
+	SymbolCode_MultiplierB = 92;	// Multiplier 계열 B 심볼
+	SymbolCode_MultiplierC = 93;	// Multiplier 계열 C 심볼
+	SymbolCode_MultiplierD = 94;	// Multiplier 계열 D 심볼
+	SymbolCode_MultiplierE = 95;	// Multiplier 계열 E 심볼
+	SymbolCode_MultiplierF = 96;	// Multiplier 계열 F 심볼
+
+	SymbolCode_PotA = 101;	// Pot 계열 A 심볼
+	SymbolCode_PotB = 102;	// Pot 계열 B 심볼
+	SymbolCode_PotC = 103;	// Pot 계열 C 심볼
+	SymbolCode_PotD = 104;	// Pot 계열 D 심볼
+	SymbolCode_PotE = 105;	// Pot 계열 E 심볼
+	SymbolCode_PotF = 106;	// Pot 계열 F 심볼
+}
+
+enum SpinMode
+{
+	SpinMode_Base = 0;	// 기본 스핀 모드
+	SpinMode_Free = 1;	// 프리 스핀 모드
+	SpinMode_Buy = 2;	// 구매 스핀 모드
+	SpinMode_Count = 3;	// 스핀 모드 수량 구분값
+}
+
+enum OverlayCalcMode
+{
+	OverlayCalc_None = 0;	// 오버레이 계산 없음
+	OverlayCalc_Multiply = 1;	// 곱연산 오버레이
+	OverlayCalc_Add = 2;	// 합연산 오버레이
+	OverlayCalc_Unused = 3;	// 계산 제외 오버레이
+	OverlayCalc_Subtract = 4;	// 뺄셈 오버레이
+}
+
+enum GrantItemKind
+{
+	GrantItem_None = 0;	// 지급 항목 없음
+	GrantItem_InventoryItem = 1;	// 아이템 지급 항목
+	GrantItem_FreeCoin = 2;	// 무료 코인 지급 항목
+	GrantItem_PaidCoin = 3;	// 유료 코인 지급 항목
+	GrantItem_FreeChip = 4;	// 무료 칩 지급 항목
+	GrantItem_PaidChip = 5;	// 유료 칩 지급 항목
+	GrantItem_FreeGem = 6;	// 무료 젬 지급 항목
+	GrantItem_PaidGem = 7;	// 유료 젬 지급 항목
+	GrantItem_SubCell = 8;	// 서브셀 지급 항목
+	GrantItem_Avatar = 9;	// 아바타 지급 항목
+	GrantItem_BenefitTier = 10;	// 혜택 등급 지급 항목
+	GrantItem_Message = 11;	// 메시지 지급 항목
+	GrantItem_KickTicket = 12;	// 강퇴권 지급 항목
+}
+
+enum InboxReason
+{
+	InboxReason_None = 0;					// 우편 사유 없음
+	InboxReason_SeasonReward = 1;			// 시즌 보상 우편
+	InboxReason_PurchaseReward = 2;			// 구매 보상 우편
+	InboxReason_LunchPush = 3;				// 점심 푸시 보상 우편
+	InboxReason_AchievementReward = 4;		// 업적 보상 우편
+	InboxReason_AdminTool = 5;				// 운영 도구 발송 우편
+	InboxReason_ReturnGift = 6;				// 복귀 선물 우편
+	InboxReason_RankingReward = 7;			// 랭킹 보상 우편
+	InboxReason_CouponReward = 8;			// 쿠폰 보상 우편
+	InboxReason_GoodsPurchase = 9;			// 상품 구매 우편
+	InboxReason_Attendance = 10;			// 출석 보상 우편
+	InboxReason_MissionReward = 11;			// 미션 보상 우편
+	InboxReason_MaintenanceReward = 12;		// 점검 보상 우편
+	InboxReason_Purchase = 13;				// 구매 우편
+	InboxReason_FriendInviteReward = 14;	// 친구 초대 보상 우편
+	InboxReason_PushReward = 15;			// 푸시 보상 우편
+	InboxReason_EventReward = 16;			// 이벤트 보상 우편
+	InboxReason_DinnerPush = 17;			// 저녁 푸시 보상 우편
+	InboxReason_LevelUpReward = 18;			// 레벨업 보상 우편
+	InboxReason_BalanceLimit = 19;			// 재화 한도 관련 우편
+};
+
+enum InboxState
+{
+	InboxState_None = 0;	// 우편 상태 없음
+	InboxState_Claimable = 1;	// 수령 가능 상태
+	InboxState_Pending = 2;	// 요청 전 대기 상태
+	InboxState_Requested = 3;	// 요청 처리 상태
+	InboxState_Rejected = 4;	// 거부 상태
+}
+
+enum TaskCategory
+{
+	TaskCategory_None = 0;	// 과제 분류 없음
+	TaskCategory_Mission = 1;	// 미션 분류
+	TaskCategory_LoungeMission = 2;	// 라운지 미션 분류
+	TaskCategory_Achievement = 3;	// 업적 분류
+}
+
+enum TaskTrigger
+{
+	TaskTrigger_None = 0;	// 과제 이벤트 없음
+	TaskTrigger_LowBadugiPlay = 1;	// 로우바둑이 플레이 횟수
+	TaskTrigger_LowBadugiEnemyAllIn = 2;	// 로우바둑이 상대 올인 유도 횟수
+	TaskTrigger_LowBadugiSevenMade = 3;	// 로우바둑이 7메이드 이상 족보 횟수
+	TaskTrigger_LowBadugiWin = 4;	// 로우바둑이 승리 횟수
+	TaskTrigger_HoldemPlay = 5;	// 홀덤 플레이 횟수
+	TaskTrigger_HoldemWin = 6;	// 홀덤 승리 횟수
+	TaskTrigger_BaccaratPlay = 7;	// 바카라 플레이 횟수
+	TaskTrigger_BaccaratWin = 8;	// 바카라 승리 횟수
+	TaskTrigger_BlackjackPlay = 9;	// 블랙잭 플레이 횟수
+	TaskTrigger_BlackjackWin = 10;	// 블랙잭 승리 횟수
+	TaskTrigger_SlotSpin = 11;	// 슬롯 스핀 횟수
+	TaskTrigger_AliasChange = 12;	// 닉네임 변경 횟수
+	TaskTrigger_EnemyAllIn = 13;	// 상대 올인 유도 횟수
+	TaskTrigger_AdView = 14;	// 광고 시청 횟수
+	TaskTrigger_ChipReach = 15;	// 칩 보유 도달
+	TaskTrigger_GameWinChip = 16;	// 게임 승리 칩 획득
+	TaskTrigger_FriendRequest = 17;	// 친구 요청 횟수
+	TaskTrigger_HoldemFlush = 19;	// 홀덤 플러시 족보 횟수
+	TaskTrigger_HoldemEnemyAllIn = 20;	// 홀덤 상대 올인 유도 횟수
+}
+
+enum StoreProductKind
+{
+	StoreProduct_None = 0;	// 상점 상품 종류 없음
+	StoreProduct_BenefitTier = 1;	// 등급 상품
+	StoreProduct_Item = 2;	// 아이템 상품
+	StoreProduct_AppStore = 3;	// 스토어 상품
+	StoreProduct_Bundle = 4;	// 번들 상품
+}
+
+enum ContactState
+{
+	ContactState_Offline = 0;	// 오프라인 상태
+	ContactState_Online = 1;	// 온라인 상태
+	ContactState_InPlay = 2;	// 플레이 중 상태
+	ContactState_Hidden = 3;	// 표시하지 않는 상태
+	ContactState_Away = 4;	// 자리비움 상태
+}
+
+enum AnnouncementKind
+{
+	Announcement_None = 0;	// 공지 종류 없음
+	Announcement_General = 1;	// 일반 공지
+	Announcement_System = 2;	// 시스템 공지
+	Announcement_Maintenance = 3;	// 점검 공지
+	Announcement_Forced = 4;	// 강제 공지
+	Announcement_Image = 5;	// 이미지 공지
+	Announcement_Event = 6;	// 이벤트 공지
+}
+
+enum DisplaySurface
+{
+	DisplaySurface_None = 0;	// 노출 위치 없음
+	DisplaySurface_MessageBox = 1;	// 메시지 박스 노출
+	DisplaySurface_Popup = 2;	// 팝업 노출
+	DisplaySurface_MessageBoxAndPopup = 3;	// 메시지 박스 및 팝업 노출
+}
+
+enum DisplayPolicy
+{
+	DisplayPolicy_None = 0;	// 노출 정책 없음
+	DisplayPolicy_SkipToday = 1;	// 오늘 하루 노출 제외
+	DisplayPolicy_Always = 2;	// 항상 노출
+	DisplayPolicy_DailyOnce = 3;	// 하루 한 번 노출
+	DisplayPolicy_SkipTodayRemovable = 4;	// 오늘 하루 제외 및 삭제 가능
+	DisplayPolicy_AlwaysRemovable = 5;	// 항상 노출 및 삭제 가능
+	DisplayPolicy_DailyOnceRemovable = 6;	// 하루 한 번 노출 및 삭제 가능
+}
+
+enum LoginRewardAction
+{
+	LoginReward_None = 0;	// 로그인 보상 요청 없음
+	LoginReward_Initialize = 1;	// 로그인 보상 초기화 요청
+	LoginReward_Claim = 2;	// 로그인 보상 수령 요청
+	LoginReward_Skip = 3;	// 로그인 보상 건너뛰기 요청
+}
+
+enum Slot003Choice
+{
+	Slot003Choice_None = 0;	// 슬롯003 선택 없음
+	Slot003Choice_FreeTwoSpins = 1;	// 프리 스핀 2회 선택
+	Slot003Choice_CatcherBoost = 2;	// 캐처 증가 선택
+	Slot003Choice_CoinBoost = 3;	// 코인 증가 선택
+	Slot003Choice_WildMultiplier = 4;	// 와일드 배수 선택
+	Slot003Choice_CatcherReset = 5;	// 캐처 초기화 선택
+}
+
+enum Slot005WildPrizeRank
+{
+	Slot005WildPrize_Winner = 0;	// 승리 와일드 보상
+	Slot005WildPrize_TopMultiplier = 1;	// 상단 배수 와일드 보상
+	Slot005WildPrize_BottomMultiplier = 2;	// 하단 배수 와일드 보상
+}
+
+enum Slot006RevealKind
+{
+	Slot006Reveal_None = 0;	// 슬롯006 미스터리 없음
+	Slot006Reveal_Normal = 1;	// 일반 미스터리
+	Slot006Reveal_Special = 2;	// 특수 미스터리
+}
+
+enum Slot006MultiplierKind
+{
+	Slot006Multiplier_None = 0;	// 슬롯006 배수 없음
+	Slot006Multiplier_Normal = 1;	// 일반 배수
+	Slot006Multiplier_Gold = 2;	// 골드 배수
+}
+
+enum Slot008MysteryAward
+{
+	Slot008Award_AddSpinOne = 0;	// 스핀 1회 추가 보상
+	Slot008Award_AddSpinTwo = 1;	// 스핀 2회 추가 보상
+	Slot008Award_AddSpinThree = 2;	// 스핀 3회 추가 보상
+	Slot008Award_RedAdd = 3;	// 빨강 심볼 추가 보상
+	Slot008Award_GreenAdd = 4;	// 초록 심볼 추가 보상
+	Slot008Award_YellowAdd = 5;	// 노랑 심볼 추가 보상
+	Slot008Award_RedDirectionAdd = 6;	// 빨강 방향 심볼 추가 보상
+	Slot008Award_GreenDirectionAdd = 7;	// 초록 방향 심볼 추가 보상
+	Slot008Award_YellowDirectionAdd = 8;	// 노랑 방향 심볼 추가 보상
+	Slot008Award_AllAdd = 9;	// 전체 심볼 추가 보상
+	Slot008Award_AllDirectionAdd = 10;	// 전체 방향 심볼 추가 보상
+}
+
+enum Slot009PotType
+{
+	Slot009Pot_None = 0;
+	Slot009Pot_Mini = 1;
+	Slot009Pot_Minor = 2;
+	Slot009Pot_Major = 3;
+	Slot009Pot_Mega = 4;
+	Slot009Pot_Grand = 5;
+	Slot009Pot_Count = 6;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+message RoomNumberQuery
+{
+	uint64 member_id = 1;
+}
+
+message PickGridChoice
+{
+	uint32 pick_kind = 3;
+	uint32 column_index = 2;
+	uint32 row_index = 4;
+	bool chosen = 1;
+}
+
+message GridCellGroup
+{
+	repeated GridCell grid_cells = 1;					// 콤보 처리시에 삭제될 데이터의 row, column 정보 데이터 순서 ( row 0 column 0 , row 1 column 0 , row 0 column 1 , row 1 column 1 ) 의 순서로 보내준다.
+}
+
+message PeakRecordSummary
+{
+	uint64 lifetime_coin_peak = 3;		// 통산 최고 코인
+	uint64 lifetime_chip_peak = 1;	// 통산 최고 칩
+	uint64 daily_coin_peak = 4;		// 금일 최고 코인
+	uint64 daily_chip_peak = 2;	// 금일 최고 칩
+}
+
+message LoungeBenefitEvent
+{
+	int32 coin_recovery_count = 5;					// 보유코인 한도 초과시 초과 코인 복구 횟수
+	string ends_at = 3;							// 종료 날짜 ( YYYY-MM-DD HH:mm:ss )
+	string starts_at = 4;							// 시작 날짜 ( YYYY-MM-DD HH:mm:ss )
+	int32 rakeback_ratio = 6;						// 적립통장 적립율 ( 65 인 경우 0.65 )
+	int32 dealer_fee_discount_rate = 2;					// 딜러비 할인율 ( 50 인 경우 50% )
+	uint64 coin_balance_limit = 1;						// 보유 코인 + 금고 코인
+}
+
+message SlotDebugResult
+{
+}
+
+message SpinLayout
+{
+	repeated ReelWindow reel_windows = 2;		// 릴데이터 목록 
+	int32 column_total = 1;					// 열갯수 vertical
+	int32 row_total = 3;					// 행갯수 horizontal
+}
+
+message MysteryReelOutcome
+{
+	LineHitInfo mystery_line_hits = 2;
+	ReelWindow mystery_reel_window = 1;
+}
+
+message EpicWinTickerEntry
+{
+	uint64 ticker_score = 3;
+	SlotCatalog slot_catalog = 1;
+	string display_name = 2;
+}
+
+message ReelWindow
+{
+	repeated ReelSymbol reel_symbols = 1;		// 심볼 전체 목록 ( 행 * 열 갯수 ) row, column 기반의 심볼 목록 데이터 순서 ( row 0 column 0 , row 1 column 0 , row 0 column 1 , row 1 column 1 ) 의 순서로 보내준다.
+}
+
+message WinningHandHistory
+{
+	int32 winning_card_sum = 2;				// 바카라 승리한 경우의 카드 넘버 합산
+	repeated HandRank baccarat_hand_ranks = 5;		// 바카라 전용 족보
+	int32 play_order = 1;				// 플레이 순서, 내림 차순
+	bool give_up_win = 4;						// 기권 여부 ( 출력 : 기권승 )
+	HandRank hand_rank = 3;						// 족보
+}
+
+message BaccaratHandStakeMap
+{
+	map<int32, uint64> hand_rank_stakes = 9;			// 바카라 족보별 베팅 금액, Key 를 HandRank 로 변환해서 사용할것
+}
+
+message SlotDebugCommand
+{
+	bool clear_debug_values = 3;
+	uint64 reel_set_no = 1;
+	repeated uint64 reel_indices = 5;
+	SpinMode spin_mode = 2;
+	SlotCatalog slot_catalog = 6;
+	uint64 member_id = 4;
+}
+
+message RoomSnapshot
+{
+	repeated string history_notes = 24; // 최근 승리 족보, 고민중
+	string channel_code = 6;				// 채널 아이디
+	int32 play_phase = 41;						// 게임스텝 (server-internal PlayPhase 값, Server.proto 참고)
+	int32 room_no = 14;						// 방번호
+	repeated int32 cold_numbers = 33;				// 콜드번호
+	repeated int32 hot_numbers = 9	;				// 핫번호
+	repeated int32 hit_numbers = 37;				// 최근 당첨번호 : 20개
+	repeated WinningHandHistory winning_history = 21;			// 최근 승리 족보
+	uint64 recent_avg_pot_amount = 2;				// 최근 게임 정보 : 평균 팟 금액, 최근 5 경기
+	uint64 recent_largest_pot = 35;					// 최근 게임 정보 : 최대 팟 금액, 최근 5 경기
+	uint64 largest_pot = 20;						// 통산 게임 정보 : 최대 팟 금액
+	uint32 played_rounds = 40;				// 통산 게임 정보 : 총 게임 수
+	uint64 tie_pair_limit = 32;				// 타이 페어 맥스
+	uint64 player_banker_limit = 4;			// 플레이어 뱅커 맥스
+	uint64 pair_plus_limit =11;						// 방에서 배팅 할 수 있는 최대 pp값
+	uint64 wager_limit = 39;				// 방에서 베팅 할 수 있는 최대 값
+	uint64 previous_wager = 7;					// 로우바둑이 직전 유저 베팅 금액
+	uint64 pot_amount = 30;						// 로우바둑이 이번판 누적금액
+	int32 last_bet_seat = 25;		// 현재 베팅 순서중 라스트 슬롯, 1 ~ 5, 서버에서만 필요
+	int32 active_bet_seat = 8;			// 현재 베팅 진행 슬롯, 1 ~ 5, 서버에서만 필요
+	int32 leader_seat = 36;					// 현재 players 상에서의 boss 슬롯번호, 1 ~ 5
+	int32 host_seat = 1;					// 현재 players 상에서의 master ( 방장 ) 슬롯번호, 1 ~ 5
+	RoomState room_state = 23;			// RoomState_InPlay 이면 참여 불가능, 관전만 가능
+	uint64 seed_amount = 34;			// SeedMoney Value 값
+	AssetKind asset_kind = 13;				// Money 타입
+	repeated ParticipantProfile participants = 22;			// 
+	int32 seat_limit = 12;			// 플레이 참여 허용 인원
+	RuleProfile rule_profile = 38;		// 일반, 블라인드
+	BetPolicy bet_policy = 31;	// 하프, 풀
+	RoomAccessMode access_mode = 5;					// 룸 타입 ( 칩, 코인, 친구 초대)
+	PlayCategory play_category = 10;					// 게임 타입 ( 로우바둑이 ...)
+	uint64 session_seed = 3;
+	int32 priority_tier = 15;
+	int32 client_rev = 16;
+	int32 shard_hint = 17;
+	string audit_tag = 18;
+	int32 rollout_stage = 19;						// 단계적 배포용
+	int32 schema_rev = 26;						// 스키마 리비전
+	string client_locale = 27;						// 클라 로케일
+}
+
+message LineHitInfo
+{
+	repeated GridCellGroup full_hit_lines = 3;				// 히트된 라인의 심복 리스트 전체
+	repeated uint64 hit_reward_amounts = 2;						// 히트된 라인별 획득 재화
+	repeated int32 hit_line_numbers = 1;							// 히트된 라인 목록
+	repeated GridCellGroup hit_groups = 4;						// 히트된 라인의 심복 리스트 히트된 심볼 목록만
+}
+
+message PickSpinOption
+{
+	int32 multiplier_choice = 2;
+	int32 spin_count_choice = 1;
+}
+
+message LossLimitProfile
+{
+	uint64 created_at = 9;						// LossLimitProfile 생성 시간 ( 서버간 동기화에 사용 )
+	int32 pending_play_block_hours = 11;					// 다음 제한 시간 설정
+	int32 play_block_hours = 12;						// 제한 시간 설정 ( 손실한도에 도달한 경우 설정한 시간 동안 게임 참가 불가 , default 6시간)
+	uint64 account_id = 10;							// account_idx ( user_account 테이블 )
+	string purchase_limit_reset_at = 6;			// 구매 제한 갱신 시간 ( 매월 1일 0시 기준 초기화 )
+	uint64 monthly_purchase_total = 1;					// 이번달 총 구매 금액
+	uint64 purchase_limit_amount = 7;							// 구매 제한 금액
+	string loss_limit_reset_at = 5;			// 손실한도 갱신 시간 ( 제한 기준값이 걸려 있는 상태에서는 0시에 초기화를 처리 하면 안된다. )
+	int64 daily_chip_loss = 2;					// 오늘 총 손실 칩
+	int32 loss_limit_changes = 3;				// 손실한도 변경 횟수 ( 매월 2회 변경 가능, 매월 1일 0시 기준 초기화 )
+	uint64 pending_loss_limit = 4;						// 다음 손실한도 셋팅 금액 ( 0 이면 처리 안함 )
+	uint64 loss_limit_amount = 8;							// 손실한도 설정 금액
+	// 서버사용
+	uint64 session_seed = 13;
+	int64 sync_epoch = 14;						// 동기화 기준 시각
+}
+
+message RoomListEntry
+{
+	int32 server_node_id = 21;					// 서버 아이디
+	repeated int32 cold_numbers = 20;				// 콜드번호
+	repeated int32 hot_numbers = 13;				// 핫번호(룰렛용)
+	repeated int32 hit_numbers = 19;				// 최근 당첨번호 : 20개(룰렛용)
+	BetPolicy bet_policy = 17;	// 베팅룰타입 ( 홀덤 인 경우에만 추가 된다. )
+	uint64 entry_asset_min = 15;					// 입장하기 위한 최소 재화
+	uint64 max_wager = 18;				// 베팅 최대값
+	uint64 min_wager = 16;				// 베팅 최소값
+	int32 deck_card_total = 12;			// 카드 카운트 ( 바카라, 블랙잭 )
+	int32 remaining_cards = 11;			// 카드 셔플까지 남은 카드 카운트 ( 바카라, 블랙잭 )
+	repeated WinningHandHistory winning_history = 22;		// 최근 승리 족보
+	string channel_code = 14;					// Channel id ( channel list data file 참조 )
+	RoomState room_state = 10;			// RoomState_InPlay 이면 참여 불가능, 관전만 가능
+	int32 seated_count = 7;				// 현재 인원
+	int32 seat_limit = 5;				// 맥스 참여 가능 인원
+	string entry_condition = 9;				// 참가가능 (20만 이상, 100만 이상, 등등의 참여 가능한 스트링), type 값으로 뺄지 논의 필요
+	RuleProfile rule_profile = 8;				// 게임룰
+	uint64 seed_amount = 4;			// SeedMoney Value 값
+	AssetKind asset_kind = 6;				// Money 타입
+	RoomAccessMode access_mode = 2;					// 칩, 코인, 친구
+	string room_name = 1;
+	int32 room_no = 3;
+	string room_tag = 23;
+	string telemetry_tag = 24;
+	int32 cache_ttl = 25;						// 캐시 유효시간(초)
+	int32 priority_tier = 26;
+	int32 risk_score = 27;
+	int32 retry_count = 28;
+}
+
+message WaysHitInfo
+{
+	repeated uint64 hit_reward_amounts = 1;						// 히트된 라인별 획득 재화
+	repeated uint64 symbol_ids = 2;
+}
+
+message AvatarProfile
+{
+	string expires_at = 1;					// 아바타 expire 타임 ( YYYY-MM-DD HH:mm:ss )
+	bool default_granted = 3;					// 디폴트 사용 유무 ( true 계정 생성시 지급 )
+	bool free_available = 4;						// 무료 유무 ( true 무료 )
+	string avatar_label = 5;					// 닉네임
+	int32 avatar_ref_id = 2;					// 아바타 아이디 ( 1 ~ 8 )
+}
+
+message PlayRecordSummary
+{
+	int64 today_chip_gain = 12;
+	int64 today_coin_gain = 11;
+	int32 blackjack_streak_best = 14;				// 블랙잭 최고 연승 횟수
+	int32 forced_all_in_total = 13;			// 올인 시킨 횟수 ( 로우바둑이 5명중에 두명 올인 시키면 카운트 2개 누적 )
+	int64 daily_coin_gain = 10;				// 슬롯 오늘 획득 코인 ( 토탈 )
+	int32 reel_spin_total = 6;					// 슬롯 스핀 횟수 ( 슬롯 전용 )
+	int64 best_coin_gain = 4;				// 최고 획득 코인
+	int64 best_chip_gain = 3;				// 최고 획득 칩
+	int32 loss_total = 2;					// 패배 카운트
+	int32 win_total = 1;					// 승리 카운트
+	int32 participation_total = 5;			// 참여 횟수
+}
+
+message ScatterHitInfo
+{
+	uint64 scatter_reward_amount = 2;							// 스캐터 보상
+	repeated GridCell scatter_cells = 1;					// 스캐터 좌표 목록
+}
+
+message InPlayRecord
+{
+	int32 participation_total = 3;			// 참여 횟수
+	int64 earned_amount = 1;					// 플레이 중인 방에서 획득한 재화 총량
+	AssetKind asset_kind = 2;				// 플레이 중인 방의 재화 타입
+	int32 live_losses = 4;						// 패
+	int32 live_wins = 5;							// 승
+}
+
+message GridCell
+{
+	int32 symbol_ref_id = 1;
+	int32 column_index = 2;							// column
+	int32 row_index = 3;							// row
+}
+
+message CardSet
+{
+	repeated PlayingCard playing_cards = 1;
+}
+
+message ReelSymbol
+{
+	repeated int32 extra_values = 8;				// 범용성있게
+	bool search_visited = 9;						// 서버에서 사용 검색용			
+	int32 column_index = 4;							// 서버에서 사용 column
+	int32 row_index = 3;							// 서버에서 사용
+	int32 reward_multiplier = 5;					// 배수
+	float overlay_rate_value = 6;			// 오버레이에 따른 배수비율 처리용, 배수값 (연산방식은 OverlayId로 판단)
+	OverlayCalcMode overlay_calc_mode = 7;			// 오버레이 타입 타입
+	SymbolCode symbol_code = 1;
+	int32 symbol_id = 2;
+}
+
+message ComboOutcome
+{
+	repeated ReelSymbol wild_symbols_after = 7;
+	repeated ReelSymbol wild_symbols_before = 6;
+	uint32 multiplier_total = 5;						// 배수
+	ReelWindow result_reel_window = 4;									// 콤보 이후의 갱신될 릴데이터
+	uint64 total_combo_reward = 3;								// 콤보 획득 재화
+	repeated uint64 combo_reward_amounts = 2;					// 콤보 머니 List
+	repeated GridCellGroup combo_cell_groups = 1;			// GridCellGroup 의 List 형태 ( ID 별로 처리하기 위해서 )
+}
+
+message CreditStack
+{
+	uint64 win_amount = 2;		// 당첨 금액
+	uint32 bonus_spin_count = 3;	// 쌓인 프리스핀 카운트
+	uint32 stack_count = 1;			// 쌓인 금액 주는 카운트
+	uint64 stack_amount = 4;			// 쌓인 금액
+}
+
+message RespinWindow
+{
+	repeated ReelWindow respin_reel_windows = 1;
+}
+
+message CreditStackList
+{
+	uint32 previous_bonus_spins = 1;
+	repeated CreditStack credit_stacks = 3;
+	int64 wager_amount = 2;
+}
+
+message RoomNumberResult
+{
+	uint64 room_no = 2;
+	uint64 member_id = 1;
+}
+
+message StateRefreshNotice
+{
+}
+
+message PickGameState
+{
+	repeated PickGridChoice pick_choices = 3;
+	uint32 bonus_spin_count = 1;
+	SlotCatalog slot_catalog = 2;
+}
+
+message PickSpinOptionList
+{
+	repeated PickSpinOption options = 1;
+}
+
+message PlayingCard
+{
+	CardRank rank_code = 1;
+	CardSuit suit_code = 2;
+}
+
+message TaskProgress
+{
+	bool grant_claimed = 6;						// 리워드 보상 완료
+	uint64 target_progress = 9;							// 퀘스트 완료를 위한 횟수 (또는 수량)
+	uint64 current_progress = 10;						// 현재 횟수 (또는 수량)
+	GrantItemKind grant_kind = 8;				// 보상 타입
+	TaskTrigger task_trigger = 1;	// 업적 이벤트 타입
+	TaskCategory task_category = 2;			// 미션 분류(미션 라운지미션 어치브먼트)
+	int32 display_order = 4;								// 정렬 아이디
+	int32 task_id = 3;								// 퀘스트 아이디
+	int32 task_group_id = 5;						// 퀘스트 그룹 아이디
+	uint64 task_instance_id = 7;							// 서버에서 부여한 quest 고유 인덱스
+}
+
+message ParticipantProfile
+{
+	bool max_bet_enabled = 1;					// 플레이어 maxbet 여부
+	uint64 pair_plus_wager = 76;						// 블랙잭 pp배팅
+	bool side_bet_enabled = 34;						// 플레이어 Side 여부
+	uint64 owner_member_id = 20;			// 블랙잭 SUB 인 경우, 제어하는 플레이어 player_idx
+	bool blackjack_sub_player = 60;				// 블랙잭 SUB 플레이어 여부
+	repeated PlayingCard held_cards = 11;			// 바둑이, 홀덤 자신의 카드
+	uint64 round_wager_total = 73;		// 현재 게임모드에서 베팅한 토탈 금액
+	repeated int32 card_swap_counts = 25;	// 바둑이 난입 처리용 아침, 점심, 저녁에 교체한 카드 숫자 카드, 교체 하지 않았으면 0 으로 보내줌
+	TableAction current_table_action = 42;				// 플레이어 이번 베팅 싸이클의 베팅 내역
+	uint64 current_wager_amount = 9;				// 플레이어 이번 베팅 싸이클에 베팅한 금액
+	bool leave_reserved = 78;					// 플레이어 나가기 예약 여부
+	bool all_in_state = 35;						// 플레이어 Allin 여부
+	bool folded_out = 50;						// 플레이어 Die 여부
+	string identity_check_expires_at = 70;				// 본인 인증 만료 시간
+	int32 attendance_streak_days = 24;				// 출석일수 ( daily_refresh_time 갱신 시간에 같이 갱신 된다. )
+	string nickname_change_locked_until = 54; // 닉네임 변경 금지 만료 시간. ( 닉네임 변경시에 다음달 1일로 셋팅한다. ) 최초 생성시에는 2100년으로 생성
+	bool nickname_changed_once = 18;			// 닉네임 변경 여부 ( 강제로 1번은 변경을 하여야 한다. )
+	uint64 paid_gems = 41;					// 유료 다이아
+	uint64 rakeback_balance = 7;						// 적립 통장
+	BenefitTier membership_tier = 77;		// 멤버쉽 클라스
+	string chip_free_charge_reset_at = 28; // 칩 무료충전 갱신 가능 시간 ( YYYY-MM-DD HH:mm:ss )
+	string coin_free_charge_reset_at = 46; // 코인 무료충전 갱신 가능 시간 ( YYYY-MM-DD HH:mm:ss )
+	string daily_reset_at = 33;			// 일별 갱신 시간 ( YYYY-MM-DD HH:mm:ss ) — 친구목록 캐시(cFriendManager)에서도 참조하여 예외적으로 유지
+	uint64 vault_coins = 52;					// 금고에 저장된 코인
+	uint64 vault_chips = 23;					// 금고에 저장된 칩
+	string display_name = 40;					// 플레이어 닉네임
+	uint64 member_id = 10;					// 플레이어 인덱스 (서버에서 생성)
+	int32 coin_refill_uses = 75;			// 코인 리필 카운트
+	int32 chip_refill_uses = 21;			// 칩 리필 카운트
+	string membership_expires_at = 48;		// 멤버쉽 잔여 시간 DateTime 형식 "2023-09-11 00:00:00"
+	bool membership_enabled = 29;			// 멤버쉽 활성화 여부
+	uint32 equipped_avatar_id = 44;					// 아바타 아이디
+	uint32 kick_ticket_balance = 12;			// 킥 티켓 카운트
+	uint64 wallet_gems = 26;							// 다이아
+	uint64 wallet_coins = 47;						// 코인
+	uint64 wallet_chips = 36;						// 칩
+	uint64 experience_points = 43;
+	int32 member_level = 19;						// 레벨
+}
+
+message HandRankRecord
+{
+	int32 win_total = 2;
+	int32 occurrence_total = 1;
+	HandRank hand_rank = 3;
+}
+
+message Int32Array {
+    repeated int32 values = 1;
+}

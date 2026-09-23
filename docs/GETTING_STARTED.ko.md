@@ -1,3 +1,5 @@
+> 현재 기본 실행 경로는 원본 TableServer의 protobuf 모드입니다. [최신 이전·실행 안내](TABLESERVER_PROTOBUF_MIGRATION.md)를 먼저 확인하세요. 아래는 이전 데모 서버용 기록입니다.
+
 # MIMIC 실행 안내
 
 기존 서버의 C# FrontServer / C# PlatformServer / C++ TableServer 역할과 Unity의 Managers / Network / Data / Lobby / Holdem 구성을 유지한 홀덤 전용 기본 프레임워크입니다. 통신 데이터는 공통 `.proto`에서 생성한 Protocol Buffers를 사용합니다.

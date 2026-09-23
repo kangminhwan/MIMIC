@@ -1,0 +1,10 @@
+﻿ID,PRICE,REWARD,PRDID_G,PRDID_A,PRDID_O,CONDITION,DUPLICATE,End
+GEM_11,1100,PAIDGEM:11,g_pm_gem_11,a_pm_gem_11,o_pm_gem_11,,,
+GEM_55,5500,PAIDGEM:55,g_pm_gem_55,a_pm_gem_55,o_pm_gem_55,,,
+GEM_110,11000,PAIDGEM:110,g_pm_gem_110,a_pm_gem_110,o_pm_gem_110,,,
+GEM_225,22000,PAIDGEM:225,g_pm_gem_225,a_pm_gem_225,o_pm_gem_225,,,
+GEM_340,33000,PAIDGEM:340,g_pm_gem_340,a_pm_gem_340,o_pm_gem_340,,,
+GEM_570,55000,PAIDGEM:570,g_pm_gem_570,a_pm_gem_570,o_pm_gem_570,,,
+GEM_1050,99000,PAIDGEM:1050,g_pm_gem_1050,a_pm_gem_1050,o_pm_gem_1050,,,
+MEMBER_STANDARD,12000,MEMBERSHIP:STANDARD/PERIODSEC:2592000,g_pm_member_standard,a_pm_member_standard,o_pm_member_standard,member,,
+MEMBER_PREMIUM,22000,MEMBERSHIP:PREMIUM/PERIODSEC:2592000,g_pm_member_premium,a_pm_member_premium,o_pm_member_premium,member,,

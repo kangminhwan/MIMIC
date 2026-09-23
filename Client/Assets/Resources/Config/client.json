@@ -1,1 +1,10 @@
-{"frontUrl":"http://127.0.0.1:5080"}
+{
+  "nativeTableServer": true,
+  "tableHost": "127.0.0.1",
+  "tablePort": 22001,
+  "holdemChannel": "Holdem_Chip_10K",
+  "holdemBetPolicy": 4,
+  "appVersion": "1.0.0",
+  "frontUrl": "http://127.0.0.1:5080",
+  "storeChannel": 4
+}

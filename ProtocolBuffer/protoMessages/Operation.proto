@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+import "General.proto";
+import "PmNet.proto";
+import "Server.proto";
+
+import "timestamp.proto";
+import "wrappers.proto";
+
+package OperationsTool;
+
+///////////////////////////////// 데이터 조회
+message Claim {
+	string auth_code = 1;
+	string platform_guid = 2;
+	string made_id = 3;
+	string nickname = 4;
+	General.AccessChannelType platform_type = 5;
+	string join_date = 6;
+}
+
+///////////////////////////////// 데이터 변경
+message OperationReq {
+	Property before = 1;
+	Property after = 2;
+	string reason = 3;
+
+	message Property {
+		oneof property {
+			// player
+			string nickname = 1;
+			int64 exp = 2;
+			int64 gem = 3;
+			int64 paid_gem = 4;
+			int64 chips = 5;
+			int64 coin = 6;
+			int64 safe_chips = 7;
+			int64 safe_coin = 8;
+			int64 rakeback = 9;
+			int32 kick_ticket_count = 10;
+			string membership_expiry_time = 11;
+
+			// account
+			int64 daily_lost_chip = 21;
+			int64 lost_limit = 22;
+			string refresh_time_of_loss_limit = 23;
+			int64 monthly_buy_total = 24;
+			int64 buy_limit = 25;
+			string refresh_time_of_buy_limit = 26;
+
+			// platform
+			string reg_date = 31;
+
+			// avatar
+			Avatar avatars = 41;
+
+			// quest
+			Quest quests = 51;
+
+			// mailbox
+			Mailbox mailbox = 61;
+		}
+	}
+
+	message Avatar {
+		string expiry_date = 41;
+	}
+
+	message Quest {
+		int64 current_count = 51;
+	}
+
+	message Mailbox {
+		repeated int64 mail_idx = 61;
+	}
+}

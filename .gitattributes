@@ -5,3 +5,8 @@
 *.asset text eol=lf whitespace=-blank-at-eol
 *.unity text eol=lf whitespace=-blank-at-eol
 Client/Assets/_DEV/_Scripts/Network/Generated/*.cs linguist-generated=true
+
+*.lib binary
+*.exe binary
+ProtocolBuffer/cpp/* linguist-generated=true
+ProtocolBuffer/csharp/* linguist-generated=true

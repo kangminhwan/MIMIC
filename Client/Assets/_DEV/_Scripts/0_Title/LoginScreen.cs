@@ -25,11 +25,13 @@ namespace Mimic.Screens
             showPassword.onValueChanged.AddListener(visible => { password.contentType = visible ? InputField.ContentType.Standard : InputField.ContentType.Password; password.ForceLabelUpdate(); });
             account.onValueChanged.AddListener(_ => ClearValidation()); password.onValueChanged.AddListener(_ => ClearValidation());
             confirmPassword.onValueChanged.AddListener(_ => ClearValidation()); nickname.onValueChanged.AddListener(_ => ClearValidation());
+            if (Game.NativeMode) registerTab.gameObject.SetActive(false);
             SetMode(false);
         }
         public void SetMode(bool register)
         {
             if (Game != null && Game.Busy) return;
+            if (Game.NativeMode) register = false;
             registering = register; registerFields.SetActive(register);
             optionsRow.anchoredPosition = new Vector2(0, register ? -697 : -470);
             validationRect.anchoredPosition = new Vector2(0, register ? -748 : -520);
@@ -51,6 +53,7 @@ namespace Mimic.Screens
             string name = account.text.Trim(), secret = password.text;
             if (!Regex.IsMatch(name, "^[A-Za-z0-9_]{3,24}$")) { validation.text = "아이디는 영문·숫자·밑줄 3~24자로 입력해 주세요."; return; }
             if (secret.Length < 8 || secret.Length > 128) { validation.text = "비밀번호는 8~128자로 입력해 주세요."; return; }
+            if (Game.NativeMode && (!Regex.IsMatch(name, "^[A-Za-z0-9]{5,12}$") || secret.Length > 16)) { validation.text = "TableServer: ID 5-12, password 8-16 characters."; return; }
             string display = nickname.text.Trim();
             if (registering && (display.Length < 2 || display.Length > 24 || HasControl(display))) { validation.text = "닉네임은 2~24자로 입력해 주세요."; return; }
             if (registering && secret != confirmPassword.text) { validation.text = "비밀번호 확인이 일치하지 않습니다."; return; }

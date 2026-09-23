@@ -13,6 +13,7 @@ namespace Mimic.Screens
         public Button ready, leave, fold, call, raise;
         public InputField raiseAmount;
         public GameObject actionBar;
+        private NativeHoldemControls nativeControls;
         private ulong revision = ulong.MaxValue;
         private void Start()
         {
@@ -31,6 +32,7 @@ namespace Mimic.Screens
                 if (amount < state.CurrentBet + state.MinRaise || amount > own.Chips + own.StreetBet) { Game.SetStatus("최소 레이즈와 보유 칩 범위 안에서 입력해 주세요.", true); return; }
                 Game.Run(() => Game.Act(ActionKind.Raise, amount));
             });
+            if (Game.NativeMode) nativeControls = new NativeHoldemControls(this, Game);
             Refresh();
         }
         public static string CardLabel(Card card)
@@ -50,6 +52,7 @@ namespace Mimic.Screens
                 board[i].color = i < state.Board.Count ? (state.Board[i].Suit == 1 || state.Board[i].Suit == 2 ? new Color(.8f,.28f,.25f) : new Color(.08f,.13f,.16f)) : new Color(.55f,.61f,.6f);
             }
             pot.text = state.Pot.ToString("N0"); stage.text = "HAND " + state.HandId.ToString("000") + "  /  " + state.Street.ToString().ToUpperInvariant();
+            if (nativeControls != null) { result.text = state.Result; nativeControls.Refresh(state); return; }
             bool waiting = state.Street == Street.Waiting || state.Street == Street.Complete;
             bool turn = !waiting && own != null && own.Seat == state.ActingSeat;
             ready.gameObject.SetActive(waiting); ready.interactable = !Game.Busy && own != null && !own.Ready && own.Chips >= 20;

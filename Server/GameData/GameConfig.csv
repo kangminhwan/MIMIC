@@ -1,0 +1,2 @@
+﻿ID,LowBadukiPlayerCount,LowBadukiWait,LowBadukiTurnMinimumWait,RecentlyHistoryCount,LowBadukiBetWait,CardChangeWait,BaseDistributionCardWaitTwo,BaseDistributionCardWaitThree,BaseDistributionCardWaitFour,BaseDistributionCardWaitFive,PlayerTurnResWait,PlayResultWaitGiveUp,PlayResultWaitTwo,PlayResultWaitThree,PlayResultWaitFour,PlayResultWaitFive,ChardChangeDelay,End
+BadukiConfig,5,1500,1000,5,7000,10000,1925,2125,2325,2525,1000,5000,8500,9750,11000,12250,230,

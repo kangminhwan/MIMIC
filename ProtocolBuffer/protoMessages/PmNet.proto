@@ -1,0 +1,2515 @@
+﻿syntax = "proto3";
+
+import "General.proto";
+
+package PmNet;
+
+message BCHailFinalWagerRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	bytes _reserved12 = 12;
+}
+
+message BCHailFinalWagerRS
+{
+	General.AssetKind fund_kind = 1;
+	uint64 fund_after = 2;
+	uint64 wager_member_idx = 4;					// bet player idx
+	uint64 fund_before = 5;
+	uint64 pp_wager = 6;							// pp_bet
+	bytes ctx_buf = 11;								// client data buffer
+	map<int32, uint64> bc_wagers = 12;				// baccarat bet amount per hand rank (convert Key to General.HandRank)
+	int32 _crc = 16;								// checksum
+	int32 _reserved17 = 17;
+}
+
+
+
+message FlankWagerRS
+{
+	bool flank_flag = 1;
+	uint64 member_idx = 4;					// player idx
+	int32 _crc = 5;							// checksum
+}
+
+// bet order, card change process message
+message PhaseTurnRS
+{
+	int32 remain_ms = 1;							// remaining time (ms). whether to notify once or per second TBD; server adds ~2s buffer.
+	int32 split_no = 2;								// blackjack 0~4 (main dealing is 0; splits only proceed 1~4)
+	uint64 member_wager = 3;						// user bet size
+	uint64 member_idx = 4;							// user to bet or change cards
+	int32 match_phase = 5;				// play phase, FirstBet, SecondBet, ThirdBet, FinalBet (server PlayPhase value)
+	uint64 max_wager = 6;							// highest bet size
+	repeated General.TableAction wager_options = 7;	// available bet list
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MemberDropAuxKeyRQ
+{
+	string cur_aux_key = 4;							// sub password
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MemberDropAuxKeyRS
+{
+	int32 aux_key_miss_cnt = 4;						// password retry fail count
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message RevealRS
+{
+	repeated General.PlayingCard shared_cards = 1;			// full community card list
+	repeated uint64 flank_member_idx_list = 2;		// send list of side-bet players to client.
+	repeated General.PlayingCard fresh_shared_cards = 4;	// newly received community cards
+	map<uint64, General.CardSet> member_hand_tiles = 5;// player hand card list
+	int32 _crc = 7;									// checksum
+}
+
+message RabbitHuntRQ
+{
+														// holdem rabbit hunt request. no body needed, requester identified by session.
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;									// checksum
+}
+
+message RabbitHuntRS
+{
+	repeated General.PlayingCard rabbit_cards = 1;		// cosmetic reveal of the board cards that would have come out, doesn't affect the payout
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;									// checksum
+}
+
+message ShowHandRQ
+{
+	General.HandRevealScope reveal_scope = 1;			// which hole card(s) to reveal (left / right / all)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;									// checksum
+}
+
+message ShowHandRS
+{
+	uint64 member_idx = 1;								// player who revealed
+	repeated General.PlayingCard hand_tiles = 2;		// revealed hole card(s), count depends on reveal_scope
+	General.HandRevealScope reveal_scope = 3;			// which hole card(s) were revealed
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;									// checksum
+}
+
+
+
+
+message MatchWagerRQ
+{
+	General.HandRank bc_wager_hand_rank = 1;				// baccarat bet position
+	uint64 aux_member_idx = 2;						// blackjack sub player PlayerIdx
+	General.TableAction wager_kind = 4;				// bet
+	int32 aux_member_seat = 5;						// blackjack sub player bet slot number (1~5)
+	bool pp_wager_flag = 6;							// blackjack pp-bet flag?
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message MatchWagerRS
+{
+	General.TableAction member_wager = 1;			// bet
+	uint64 fund_before = 2;
+	bool all_in_flag = 3;							// all-in occurrence state
+	uint64 wager_member_idx = 4;					// bet player idx
+	General.AssetKind fund_kind = 5;
+	uint64 fund_after = 6;
+	bool flank_flag = 7;							// side-bet occurrence state (true if any side bet with even 1 chip)
+	General.HandRank bc_wager_hand_rank = 8;				// baccarat bet position
+	bytes ctx_buf = 11;								// client data buffer
+	map<int32, uint64> bc_wagers = 12;				// baccarat bet amount per hand rank (convert Key to General.HandRank)
+	bool pp_wager_flag = 13;						// blackjack pp-bet flag?
+	uint64 export_batch_id = 9;
+	uint32 feature_mask = 10;						// 기능 플래그 비트마스크
+}
+
+message NativeKeySwapRQ
+{
+	string enc_ts = 1;						// identity NICE API processing time
+	string native_id = 2;					// account id to create (5-12 chars alphanumeric)
+	string ci = 4;							// identity NICE API ci
+	string native_key = 5;					// password (ASE 128 encrypted storage)
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+}
+
+message NativeKeySwapRS
+{
+	bytes ctx_buf = 11;		// client data buffer
+}
+
+message InboxReadRQ
+{
+	repeated uint64 inbox_idx_list = 4;				// inbox idx list to open
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	string _reserved16 = 16;
+}
+
+message InboxReadRS
+{
+	uint64 stacks = 1;								// earned chip
+	repeated General.AvatarProfile skin_list = 2;			// acquired avatar list
+	repeated uint64 fail_idx_list = 3;				// failed to acquire inbox list
+	repeated uint64 inbox_idx_list = 4;				// opened inbox idx list
+	uint64 tokens = 5;								// earned coin
+	repeated int32 item_nos = 6;					// acquired item list
+	uint64 gems = 7;								// free gem
+	uint64 paid_gems = 8;							// paid gem
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+// vote execute request
+message ChamberPollAttemptRQ
+{
+	uint64 poll_target_idx = 1;						// vote target idx
+	uint64 poll_requester_idx = 4;					// vote requester idx
+	General.BallotKind poll_kind = 5;					// ballot kind (currently Kick only)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// vote execute response (to all users in room)
+message ChamberPollAttemptRS
+{
+	uint64 poll_target_idx = 1;						// vote target idx
+	int32 poll_idx = 2;								// vote idx (valid in current room only); must be set on RoomVoteAnswer.
+	uint64 poll_requester_idx = 4;					// vote requester idx
+	General.BallotKind poll_kind = 5;					// ballot kind (currently Kick only)
+	int32 poll_remain_sec = 6;						// vote process time (must approve/reject within server-allotted time)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// refresh recent win data
+message ChamberLogRefreshRS
+{
+	repeated General.WinningHandHistory win_log = 4;			// recent winning hand rank
+	int32 _crc = 9;									// checksum
+}
+
+message PushStickerRQ
+{
+	uint64 member_idx = 1;
+	int32 sticker_id = 4;							// emoticon id
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message PushStickerRS
+{
+	uint64 member_idx = 1;
+	int32 sticker_id = 4;							// emoticon id
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message SharedTileRS
+{
+	repeated General.PlayingCard shared_cards = 1;			// full community card list
+	int32 match_phase = 2;				// play phase (server PlayPhase value)
+	repeated General.PlayingCard fresh_shared_cards = 4;	// newly received community cards
+	bool intrusion_flag = 5;						// activation flag on intrusion
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MateChamberBuildRQ
+{
+	General.BetPolicy wager_rule = 1;			// BettingRuleType (half-bet, full-bet)
+	string ch_token = 4;							// Channel ID (refer to channel list data file)
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message MateChamberBuildRS
+{
+	General.RoomSnapshot chamber_info = 1;				// room info
+	uint64 lead_idx = 2;							// boss idx
+	string ch_token = 3;							// Channel ID (refer to channel list data file)
+	int32 chamber_no = 4;							// room number
+	repeated General.ParticipantProfile members = 5;				// active user data
+	uint64 captain_idx = 6;							// room host idx
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message InformObserverCntRS
+{
+	int32 observer_cnt = 4;							// watcher count
+}
+
+enum BJSideOutcomeKind
+{
+	BJSideOutcomeKind_None = 0;
+	Mix = 1;
+	Color = 2;
+	Perfect = 3;
+}
+
+message ResumeSigninRS
+{
+	General.ParticipantProfile member_info = 1;			// player data
+	General.LossLimitProfile loss_cap = 2;			// loss limit
+	Ledger ledger = 3;						// records (LB baduki, holdem, baccarat, blackjack, slot)
+	string svr_ts = 4;						// server time. if sync needed, set client time to server time.
+	repeated General.AvatarProfile skins = 5;		// player avatar list
+	int32 aux_key_miss_cnt = 6;				// sub password retry count
+	bool first_signin = 7;					// player first login flag (true: attendance activation required, check inbox rewards)
+	int32 key_miss_cnt = 8;					// password retry count
+	// records related -> deciding whether to split packet or include in login response
+	repeated General.PeakRecordSummary top_log_list = 9;	// all-time record list
+	bytes ctx_buf = 10;						// client data buffer
+	string quit_planned_ts = 11;			// scheduled withdrawal date (can cancel before expiry)
+	string profile_uid = 12;				// account UID
+	// red dot handling
+	bool inbox_pending = 13;				// inbox alert
+	string block_begin = 14;				// sanction start time
+	string block_end = 15;					// sanction end time
+	string block_cause = 16;				// sanction reason
+	General.LoungeBenefitEvent atrium_drop = 17;	// lounge event (check active state within start/end date)
+	string outlet_uid = 18;					// outlet UID
+	bool tier_stale = 19;					// membership expired
+	ChamberEnterRS chamber_enter_res = 20;	// room info
+	ShiftAtriumRS shift_atrium_res = 21;		// server change
+	int32 _v = 30;							// spec ver
+	uint32 feature_mask = 22;						// 기능 플래그 비트마스크
+	int32 priority_tier = 23;
+	int32 rollout_stage = 24;						// 단계적 배포용
+	int32 retry_count = 25;
+	int32 shard_hint = 26;
+	int32 build_channel = 27;
+	int32 _reserved31 = 31;
+}
+
+message ExpelMemberRQ
+{
+	uint64 expel_member_idx = 1;					// force-kicked user's player_idx
+	int32 chamber_no = 4;							// room number
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message ExpelMemberRS
+{
+	string expel_cooldown = 1;						// kick cooldown
+	uint64 expel_member_idx = 4;					// force-kicked user's player_idx
+	string expel_alias = 5;							// kicked user's nickname
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// process start message, host-only execution
+message MatchKickoffRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message MatchKickoffRS
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	bytes _reserved12 = 12;
+}
+
+// market purchase
+message MarketPurchaseRQ
+{
+	string item_no = 1;								// shop id
+	string recv_proof = 2;							// payment receipt
+	bool sandbox_flag = 3;							//sandbox flag
+	General.StoreProductKind market_item_kind = 4;	// General.StoreProductKind
+	string dev_payload = 5;							// may be used later (server-issued payment validation string)
+	string sig = 6;
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MarketPurchaseRS
+{
+	General.ParticipantProfile refresh_member = 1;				// player refresh
+	bool inbox_got = 4;								// inbox received flag (true if inbox list request required)
+	repeated General.AvatarProfile refresh_skins = 5;		// avatar refresh
+	bytes ctx_buf = 11;								// client data buffer
+	string bill_fail = 12;							//billing error on purchase fail
+	string txn_id = 13;								// used only when Market Code is Apple. (usage TBD)
+	int32 _crc = 17;								// checksum
+	int32 _reserved18 = 18;
+}
+
+message ReelMegaWinBoard
+{
+	bool in_match_flag = 1;
+	repeated General.EpicWinTickerEntry epicwin_list = 4;
+	int32 _crc = 5;						// checksum
+}
+
+// baccarat Pair, Natural notification
+message BCCoupleNtlRS
+{
+	bool member_ntl = 1;							// player Natural
+	bool banker_ntl = 2;							// banker Natural
+	bool member_pair = 4;							// player Pair
+	bool banker_pair = 5;							// banker Pair
+	int32 _crc = 6;									// checksum
+}
+
+
+message OutcomeCompleteRQ
+{
+														// result screen end packet (holdem, baduki). no server response
+	int32 _crc = 1;									// checksum
+	int32 _reserved2 = 2;
+}
+
+
+
+///////////////////////////////// friend
+
+message MateDetail
+{
+	Ledger ledger = 1;							// player record data
+	string active_ch_token = 2;						// connected game when in table game
+	int32 node_id = 3;								// save last played server (user from server 2 goes directly to server 2).
+	General.ParticipantProfile member_info = 4;					// friend data
+	General.ContactState mate_state = 5;				// friend connection status
+	General.SlotCatalog reel_kind = 6;				// connected game when in slot game
+	int32 _crc = 8;									// checksum
+}
+
+message DropMemberOnSeatRS
+{
+	uint64 member_idx = 4;							// seat move reservation canceled player
+	int32 _crc = 9;									// checksum
+}
+
+enum BJOutcomeKind
+{
+	BJOutcomeKind_None = 0;
+	Win = 1;
+	Lose = 2;
+	Draw = 3;
+	EvenMoney = 4;									// processing for even money bet; not win/loss/draw.
+}
+
+message ShiftAtriumRS
+{
+	int32 endpoint = 1;						// target lobby server port
+	string profile_uid = 2;					// account UID
+	string atrium_node_ip = 4;				// target lobby server IP
+	string outlet_uid = 5;					// outlet UID
+	int32 _crc = 9;							// checksum
+	int32 _reserved10 = 10;
+}
+
+message BJServeMoveRQ
+{
+	int32 split_no = 1;								// split number for action 0, 1, 2, 3, 4 (must request in order)
+	uint64 aux_member_idx = 2;						// blackjack sub player PlayerIdx
+	General.BlackjackChoice serve_move = 4;	// dealing action
+	int32 aux_member_seat = 5;						// blackjack sub player bet slot number (1~5)
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _crc = 25;								// checksum
+}
+
+message BJServeMoveRS
+{
+	General.BlackjackChoice serve_move = 1;	// dealing action
+	uint64 fund_before = 2;
+	repeated General.CardSet member_split_cards = 3;	// player card list (0: main cards, 1~4: split cards)
+	uint64 member_idx = 4;							// action player idx
+	General.AssetKind fund_kind = 5;
+	uint64 fund_after = 6;
+	General.HandRank serve_outcome = 7;					// dealing result: Blackjack or Bust
+	int32 split_no = 12;							// split number for action 0, 1, 2, 3, 4 (must request in order)
+	bool aux_member_flag = 13;						// flag whether player_idx corresponds to a sub player
+	uint64 wager_amount = 14;						// bet amount
+	uint64 wager_cumul = 15;						// accumulated bet amount
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _crc = 25;								// checksum
+	string extra_payload = 8;						// 확장 데이터
+	bool perf_sample_flag = 9;
+	int32 cache_ttl = 10;						// 캐시 유효시간(초)
+}
+
+message Ledger
+{
+	General.PlayRecordSummary lowbadugi_total = 1;
+	General.PlayRecordSummary holdem_today = 2;
+	map<int32, General.HandRankRecord> holdem_hand_ranks = 3; // Key -> General.HandRank
+	General.PlayRecordSummary lowbadugi_today = 4;
+	map<int32, General.HandRankRecord> lowbadugi_hand_ranks = 5; // Key -> General.HandRank
+	General.PlayRecordSummary baccarat_total = 6;
+	General.PlayRecordSummary holdem_total = 7;
+	General.PlayRecordSummary baccarat_today = 8;
+	map<int32, General.HandRankRecord> baccarat_hand_ranks = 9; // Key -> General.HandRank
+	bool _reserved_flag_a = 10;						// unused / reserved slot
+	General.PlayRecordSummary blackjack_total = 11;
+	map<int32, General.HandRankRecord> blackjack_hand_ranks = 12; // Key -> General.HandRank
+	int32 _reserved_val_b = 13;						// unused / reserved slot
+	General.PlayRecordSummary blackjack_today = 14;
+	General.PlayRecordSummary slot_total = 15;
+	General.PlayRecordSummary slot_today = 16;
+	string _reserved_note_c = 22;						// unused / reserved slot
+	int32 _v = 25;							// spec ver
+	string client_locale = 17;						// 클라 로케일
+	int32 ledger_rev = 18;
+	uint64 audit_seq = 19;
+	uint32 checksum_v2 = 20;						// 신규 체크섬(미적용)
+}
+
+message MemberApplySkinRQ
+{
+	int32 skin_id = 4;								// avatar id to equip
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message MemberApplySkinRS
+{
+	General.AvatarProfile skin = 4;							// changed avatar data
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message ChamberPollOutcomeRS
+{
+	General.BallotKind poll_kind = 1;					// ballot kind (currently Kick only)
+	uint64 poll_target_idx = 4;						// vote target idx
+	bool ok_flag = 5;								// true: majority agree, false: majority disagree (including timeout)
+	int32 _crc = 9;									// checksum
+}
+
+message ReplayBonusRotationsRQ
+{
+	int32 _crc = 1;									// checksum
+}
+
+message ReplayBonusRotationsRS                            // RS only required
+{
+    General.SlotCatalog reel_kind = 1;				// previously active slot game type
+    uint64 last_echo_id = 2;						// last_ack_id
+	uint32 need_val = 3;
+    General.PlayCategory match_kind = 4;					// game type
+    RotationRS rotation_res = 5;					// spin data
+    uint64 last_rotation_id = 6;					// last_spin_id
+	uint32 res_cnt = 7;
+	int32 _crc = 11;								// checksum
+}
+
+//////////////////////////////////// slot ranking
+message ReelLeaderboardDropRQ
+{
+	int32 _crc = 1;						// checksum
+	bytes ctx_buf = 11;					// client data buffer
+}
+
+message ReelLeaderboardDropRS
+{
+	repeated ReelBountyDrop reel_bounty_drops = 1;
+	bytes ctx_buf = 11;					// client data buffer
+	int32 _crc = 15;					// checksum
+	int32 _reserved16 = 16;
+}
+
+// blackjack sub seat creation request
+message BJBuildAuxRQ
+{
+	bool drop_aux = 1;								// true: delete sub player
+	int32 seat_no = 4;								// server-requested seat slot (1, 2, 3, 4, 5)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message BJBuildAuxRS
+{
+	bool drop_aux = 1;								// true: delete sub player
+	int32 seat_no = 4;								// server-requested seat slot (1, 2, 3, 4, 5)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+
+
+
+message TesterSigninRQ
+{
+	string auth_token = 4;							// QA tool auth token
+}
+
+message TesterSigninRS
+{
+}
+
+message RevokeToObserverShiftRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _reserved12 = 12;
+}
+
+message RevokeToObserverShiftRS
+{
+	uint64 member_idx = 4;							// canceling watcher's player_idx (necessity TBD)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+// boss change notification in active room
+message MatchLeadSwapRS							// boss change notification
+{
+	uint64 lead_idx = 1;							// boss idx
+	int32 lead_seat = 4;							// boss slot 1~5
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message StackDebugRQ
+{
+	int32 chamber_no = 1;							// chamber number to cheat community cards (uncreated or existing)
+	General.PlayCategory match_kind = 4;					// holdem, LowBaduki
+	repeated General.PlayingCard shared_cards = 5;			// community card list
+	General.CardSuit cs = 6;
+	map<uint64, uint64> member_tokens_map = 7;		// player coin map
+	map<uint64, uint64> member_stacks_map = 8;		// player chip map
+	uint64 member_idx_1 = 12;						// dealer unique ID for holdem, boss unique ID for low baduki
+	uint64 member_idx_2 = 13;
+	uint64 member_idx_3 = 14;
+	uint64 member_idx_4 = 15;
+	uint64 member_idx_5 = 16;
+	uint64 member_idx_6 = 17;
+	uint64 member_idx_7 = 18;
+	uint64 member_idx_8 = 19;
+	uint64 member_idx_9 = 20;
+	repeated General.PlayingCard cards_1 = 21;				// card list
+	repeated General.PlayingCard cards_2 = 22;
+	repeated General.PlayingCard cards_3 = 23;
+	repeated General.PlayingCard cards_4 = 24;
+	repeated General.PlayingCard cards_5 = 25;
+	repeated General.PlayingCard cards_6 = 26;
+	repeated General.PlayingCard cards_7 = 27;
+	repeated General.PlayingCard cards_8 = 28;
+	repeated General.PlayingCard cards_9 = 29;
+	bool clear_debug = 35;							// reset previously set QA values.
+	int32 _crc = 47;								// checksum
+	int32 client_rev = 2;
+	int32 rollout_stage = 3;						// 단계적 배포용
+	string telemetry_tag = 9;
+	bool archive_flag = 10;						// 아카이브 대상 여부
+	uint32 feature_mask = 11;						// 기능 플래그 비트마스크
+	int64 sync_epoch = 30;						// 동기화 기준 시각
+}
+
+message StackDebugRS
+{
+	int32 _crc = 1;									// checksum
+	int32 _reserved2 = 2;
+}
+
+message TileRemainBulletinRS
+{
+	int32 cards_left = 4;							// remaining cards in active game
+}
+
+message ResetSpendCapRQ
+{
+	string alias_label = 4;							// nickname
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message ResetSpendCapRS
+{
+	General.LossLimitProfile loss_cap = 4;					// loss limit
+	int32 _crc = 9;									// checksum
+}
+
+////////////////////////////////////// Web Request
+
+message PortalRQ
+{
+	string ver = 4;									// version data
+}
+
+message PortalMarketInfo
+{
+	// 스토어별 버전/공지 정보 1건. PortalRS.market_list 에 스토어 수만큼(ps/as/os/pc) 반복됨.
+	General.StoreChannel store = 1;
+	string min_ver = 2;								// 리뷰서버 라우팅용 최소 버전
+	string latest_ver = 3;							// 리뷰서버 라우팅용 최신 버전
+	string review_ver = 4;							// 리뷰서버 라우팅용 리뷰 버전
+	string headline = 5;							// 스토어별 타이틀
+	string notice = 6;								// 스토어별 안내 메시지
+}
+
+message PortalRS
+{
+	string notice = 1;								// maintenance message
+	string max_ver = 2;								// max display version
+	string headline = 4;							// maintenance title
+	string min_ver = 5;								// min display version
+	repeated General.StoreChannel store_list = 6;			// maintenance store list (server entry if not in list)
+	string web_link = 12;							// related notice web page URL
+	string start_ts = 13;							// maintenance start time
+	string end_ts = 14;								// maintenance end time
+	repeated string atrium_list = 15;				// lobby server list (dns or ip TBD)
+	repeated string reel_list = 16;					// slot server list (dns or ip TBD)
+	// review server config; clients matching store-specific version route to review server.
+	// 구 ps/as/os/pc_min_ver, ps/as/os/pc_latest_ver, ps/as/os/pc_review_ver, ps/as/os/pc_headline,
+	// ps/as/os/pc_notice (20개 flat 필드)를 repeated PortalMarketInfo 1개로 통합. store 값으로 매칭.
+	repeated PortalMarketInfo market_list = 50;
+	repeated string review_atrium_list = 42;		// review lobby server list
+	repeated string review_reel_list = 43;			// review slot server list
+	string err_token = 44;							// code
+	string err_notice = 45;							// message
+	string client_locale = 3;						// 클라 로케일
+	int32 priority_tier = 7;
+	string meta_tag = 8;
+	bool near_miss_flag = 9;						// 니어미스 연출 여부
+	int32 freespin_carryover = 10;						// 프리스핀 이월
+	int32 node_hint = 11;						// 라우팅 힌트
+	uint64 session_seed = 20;
+	bool debug_marker = 21;						// 디버그 빌드용
+}
+
+message BCTileSwapRS
+{
+	repeated General.PlayingCard banker_tiles = 1;			// banker 2 cards
+	repeated General.PlayingCard banker_bonus_tile = 2;		// banker bonus card, converted to List for Stop Card display
+	bool intrusion_flag = 3;						// intrusion or reconnectwhenonly activation
+	repeated General.PlayingCard member_cards = 4;			// player 2 cards
+	repeated General.PlayingCard member_bonus_tile = 5;		// player bonus card, converted to List for Stop Card display
+	map<uint64, General.BaccaratHandStakeMap> member_wagers = 6;	// player bet amount per hand rank
+	int32 _crc = 8;									// checksum
+	int32 _reserved9 = 9;
+}
+
+message ChamberEnterRQ
+{
+	int32 node_id = 1;								// server ID
+	int32 chamber_no = 3;							// when user picks room number to join
+	string ch_token = 4;							// Channel ID (refer to channel list data file)
+	int32 reveal_delay_per_member = 12;				// holdem showdown wait per player, client-side (min 200, max 600, default 400ms)
+	int32 reveal_shared_delay = 13;					// holdem showdown community delay (default 300/800/500ms); max 3 community cards so 3 * delay
+	General.BetPolicy wager_rule = 14;			// temporarily opened to allow joining by betting rule lookup. (build 2023-12-25)
+	bool debug_bj_split = 15;						// ON: when sending initial 2 cards, send identical cards.
+	bool debug_bj_cover = 16;						// ON: set dealer's initial card to A to force insurance situation.
+	bool debug_dealer_bj = 17;						// ON: dealer always blackjack
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _shard = 25;								// node tag
+}
+
+message SeatReservationInfo
+{
+	repeated General.ParticipantProfile hold_members = 1;			// slot reservation pending player data
+	repeated uint64 engage_queue = 2;				// participation priority queue (member idx)
+}
+
+message ReconnectState
+{
+	bool reattach_flag = 1;						// reconnect flag
+	int32 cur_wager_round = 2;						// current bet round => for reconnect play
+	repeated bool wager_done_list = 3;				// same as players count => for reconnect play
+	int32 kickoff_idx = 4;							// last blind user idx
+	bool check_call_flag = 5;						// check-call flag (LB baduki)
+}
+
+message ChamberEnterRS
+{
+	repeated General.ParticipantProfile members = 1;				// active player data
+	uint64 lead_idx = 2;							// boss idx
+	int32 chamber_no = 4;
+	General.RoomSnapshot chamber_info = 5;				// room details
+	uint64 captain_idx = 6;							// room host idx
+	string ch_token = 12;							// Channel ID (refer to channel list data file)
+	SeatReservationInfo seat_reservation = 13;			// slot reservation pending player data + participation queue
+	ReconnectState reconnect_state = 15;				// reconnect-only state (reattach flag, bet round, wager done list, kickoff idx, check-call flag)
+	bytes ctx_buf = 21;								// client data buffer
+	bool view_hold_flag = 23;						// watcher reservation flag
+	int32 _shard = 26;								// node tag
+	bool host_migration_flag = 3;						// 방장 이전 여부
+	string room_tag = 7;
+	int32 cache_ttl = 8;						// 캐시 유효시간(초)
+	int64 sync_epoch = 9;						// 동기화 기준 시각
+	bytes _reserved27 = 27;
+}
+
+message BJSideOutcome
+{
+	uint64 member_idx = 1;
+	uint64 fund_after = 2;							// money after play (earned amount)
+	string alias_label = 4;
+	uint64 fund_before = 5;							// money before play
+	uint64 wager_amount = 6;						// money after play (earned amount)
+	repeated BJSideOutcomeKind pp_outcome = 7;		// PP result None, Mix, Color, Prefect
+	uint64 payout_amount = 12;						// [player] earned amount from this PP bet
+	int32 _crc = 18;								// checksum
+}
+
+message NativeIdDupVerifyRQ
+{
+	string native_id = 4;	// Native login direct id (5-12 chars alphanumeric)
+	bytes ctx_buf = 11;		// client data buffer
+}
+
+message NativeIdDupVerifyRS
+{
+	int32 _crc = 1;							// checksum
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _reserved12 = 12;
+}
+
+message PromoViewRQ
+{
+	bool start_flag = 1;							// ad start flag
+	General.AssetKind fund_kind = 4;					// reward currency type
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message PromoViewRS
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _reserved12 = 12;
+}
+
+message RevokeExpelMemberRQ
+{
+	uint64 expel_member_idx = 1;					// force-kick canceled user's player_idx
+	int32 chamber_no = 4;							// room number
+	int32 _crc = 9;									// checksum
+	string _reserved10 = 10;
+}
+
+message RevokeExpelMemberRS
+{
+	uint64 expel_member_idx = 1;					// force-kick canceled user's player_idx
+	int32 chamber_no = 4;							// room number
+	int32 _crc = 9;									// checksum
+}
+
+message BulletinDetail
+{
+	string headline = 1;							// title
+	string link_url = 2;							// URL to navigate to when 'see details' is pressed
+	string start_ts = 3;							// when time
+	uint64 bulletin_idx = 4;						// notice idx
+	string notice = 5;								// content
+	string img_url = 6;								// image included in message
+	string end_ts = 7;								// end time
+	repeated int32 mainkindbuf = 8;
+	General.DisplaySurface expose_kind = 9;			//display type
+	General.DisplayPolicy expose_opt = 10;			//display option
+	bool ps_avail = 11;
+	bool as_avail = 12;
+	bool os_avail = 13;
+	bool pc_avail = 14;
+	General.AnnouncementKind bulletin_kind = 15;			//notice type
+	repeated int32 subkindbuf = 16;
+	string min_ver = 18;
+	string max_ver = 19;
+	int32 _crc = 24;								// checksum
+	string migration_tag = 17;
+	string audit_tag = 20;
+	int32 ledger_rev = 21;
+	bool perf_sample_flag = 22;
+}
+
+message QuitMatchRQ
+{
+	int32 _crc = 1;							// checksum
+	bytes ctx_buf = 11;						// client data buffer
+	bytes _reserved12 = 12;
+}
+
+message QuitMatchRS
+{
+	int32 _crc = 1;							// checksum
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _reserved12 = 12;
+}
+
+///////////////////////////////////// WinFormsApp1
+message PullMemberIndexRS
+{
+	repeated string trace_list = 1;				//UID
+	repeated string uid_list = 4;				//UID
+	int32 _crc = 5;								// checksum
+}
+
+message BulletinIndexRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _reserved12 = 12;
+}
+
+message BulletinIndexRS
+{
+	repeated BulletinDetail bulletins = 4;			// notice message list
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message MatchCaptainSwapRS
+{
+	uint64 captain_idx = 1;							// master idx
+	int32 captain_seat = 4;							// master slot (baduki 1~5, holdem 1~9)
+	int32 _crc = 5;									// checksum
+}
+
+message ChamberLeaveHoldRQ
+{
+	bool hold = 1;									// true: reservation request success
+	bool hold_revoke = 2;							// true: reservation cancel request success
+	int32 chamber_no = 4;							// room number
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message ChamberLeaveHoldRS
+{
+	bool hold_ok = 1;								// reservation success
+	bool revoke_ok = 2;								// room exit reservation cancel success
+	int32 chamber_no = 4;							// room number
+	uint64 member_idx = 5;							// or user's player_idx
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message TunnelSignoffRQ
+{
+	int32 _crc = 1;							// checksum
+	int32 _reserved2 = 2;
+}
+
+message TunnelSignoffRS
+{
+	int32 _crc = 1;							// checksum
+}
+
+
+message PktBase
+{
+	uint32 payload_size = 1;			// DataSize
+	General.ResultCode err_kind = 2;	// Error_Code
+	bytes payload = 3;					// Data
+	string errtag = 4;					// ErrorString
+	int32 _crc = 9;						// checksum
+}
+
+// free charge station
+message FetchBonusRefuelRQ
+{
+	General.AssetKind fund_kind = 4;					// free charge type ()
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message FetchBonusRefuelRS
+{
+	uint64 fund_amount = 1;
+	string stack_refuel_next = 2;					// next free chip charge next refresh time (YYYY-MM-DD HH:mm:ss) Player field refresh required
+	General.AssetKind fund_kind = 4;
+	string token_refuel_next = 5;					// next free coin charge next refresh time (YYYY-MM-DD HH:mm:ss) Player field refresh required
+	uint64 refuel_amount = 6;						// refilled coin (must add to player coin)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// create room
+message ChamberBuildRQ
+{
+	General.BetPolicy wager_rule = 1;
+	int32 seat_cap = 2;								// max participants
+	string ch_token = 4;							// Channel ID (refer to channel list data file)
+	General.RuleProfile match_rule = 5;
+	bytes ctx_buf = 11;								// client data buffer
+	int32 reveal_delay_per_member = 12;				// holdem showdown wait per player, client-side (min 200, max 600, default 400ms)
+	int32 reveal_shared_delay = 13;					// holdem showdown community delay (default 300/800/500ms); max 3 community cards so 3 * delay
+}
+
+message ChamberBuildRS
+{
+	General.RoomSnapshot chamber_info = 1;				// room info
+	uint64 lead_idx = 2;							// boss idx
+	string ch_token = 3;							// Channel ID (refer to channel list data file)
+	int32 chamber_no = 4;							// room number
+	repeated General.ParticipantProfile members = 5;				// active user data
+	uint64 captain_idx = 6;							// room host idx
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message StoreMemberIndexRQ
+{
+	string key = 1;								//PW
+	repeated string uid_list = 4;				//UID
+	int32 _crc = 5;								// checksum
+	string _reserved6 = 6;
+}
+
+message StoreMemberIndexRS
+{
+	repeated string uid_list = 4;				//UID
+	int32 _crc = 9;								// checksum
+	bytes _reserved10 = 10;
+}
+
+message ChooseRotationRQ
+{
+	General.SlotCatalog reel_kind = 1;				// current slot game type
+	int32 choose_idx = 4;							// current selection count
+	int32 _crc = 5;									// checksum
+	int32 _reserved6 = 6;
+}
+
+message ChooseRotationRS
+{
+	RotationRS rotation_res = 4;				// spin response
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message ToObserverShiftRQ
+{
+	bool hold_member_flag = 4;						// player with seat reservation pending
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message ToObserverShiftRS
+{
+	uint64 member_idx = 1;							// watcher's player_idx
+	int32 chamber_no = 4;							// room number
+	bool view_hold_ok = 5;							// true only when watcher reservation set
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message BuildProfileRQ
+{
+	string enc_ts = 1;						// identity NICE API processing time
+	string req_seq = 2;						// request sequence
+	string ci = 3;							// identity NICE API ci
+	string app_ver = 4;						// app version
+	string recv_blob = 5;					// receivedata
+	General.IdentityCheckType auth_kind = 6;		// real-name auth type
+	string os_ver = 7;						// OS version
+	General.StoreChannel store_kind = 8;			// store info (no payment if no store on login)
+	string dev_meta = 9;					// device info
+	bytes ctx_buf = 11;						// client data buffer
+	bytes _hash = 14;						// data digest
+}
+
+message BuildProfileRS
+{
+	string profile_uid = 1;					// real-name authenticated account UID
+	General.IdentityCheckType auth_kind = 3;		// real-name auth type
+	int32 _crc = 7;							// checksum
+	bytes ctx_buf = 11;						// client data buffer
+}
+
+message SwapDailyStaleRQ
+{
+	string key = 1;									//PW
+	int32 month = 4;								// month
+	int32 _crc = 5;									// checksum
+	int32 _reserved6 = 6;
+}
+
+message SwapDailyStaleRS
+{
+	string key = 1;									//PW
+	int32 month = 4;								// month
+	int32 _crc = 5;									// checksum
+}
+
+message RefreshAtriumRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message RefreshAtriumRS
+{
+	General.ParticipantProfile member_info = 1;					// refresh player data
+	repeated General.TaskProgress atrium_goals = 2;			// lounge mission
+	General.LossLimitProfile loss_cap = 3;					// loss limit
+	Ledger ledger = 4;								// refresh daily data only (LB baduki, holdem, baccarat, blackjack, slot)
+	repeated General.TaskProgress daily_goals = 5;			// daily mission
+	bool inbox_refresh = 6;							// inbox refresh flag
+	repeated General.TaskProgress trophies = 7;				// achievement
+	bytes ctx_buf = 11;								// client data buffer
+	uint64 refuel_stacks = 12;						// refilled chip
+	uint64 stack_refuel_left = 13;					// remaining chip refill count
+	uint64 refuel_tokens = 14;						// refilled coin
+	uint64 token_refuel_left = 15;					// remaining coin refill count
+	string svr_ts = 16;								// server time
+	bool tier_stale = 17;							// membership expired
+	repeated ReelBountyDrop reel_bounty_drops = 18;	//slot event content
+	repeated string img_bulletins = 19;				// image notices
+	int32 _crc = 23;								// checksum
+	int32 shard_hint = 8;
+	int32 rollout_stage = 9;						// 단계적 배포용
+	bool debug_marker = 10;						// 디버그 빌드용
+	bool compliance_flag = 20;
+	int32 _reserved24 = 24;
+}
+
+message DropMateRQ
+{
+	uint64 member_idx = 4;							// player unique ID to remove from friends
+	int32 _crc = 9;									// checksum
+}
+
+message DropMateRS
+{
+	int32 mate_drop_cnt = 1;						// friend removal count today (max 10 deletions per day, resets daily)
+	uint64 drop_member_idx = 4;						// removed friend's player unique ID
+	int32 _crc = 5;									// checksum
+}
+
+///////////////////////////////////error log check
+message FailTraceRQ
+{
+	string fail_trace = 4;							// error log check
+}
+
+message AtriumMemberIndexRQ
+{
+	int32 _crc = 1;									// checksum
+	int32 _reserved2 = 2;
+}
+
+message AtriumMemberIndexRS
+{
+	repeated MateDetail atrium_members = 4;			// lobby player list (random max 6)
+}
+
+// blackjack refresh single player's card data
+message BJTileRefreshRS
+{
+	repeated General.CardSet member_cards = 1;			// card list per player (General.CardSet MAX 5, includes split cards)
+	General.HandRank split_outcome = 2;					// after split card payout, Blackjack only
+	uint64 member_idx = 4;							// player idx
+	bool stop_tile_anim = 5;						// stop card animation
+	int32 _crc = 7;									// checksum
+}
+
+message ReelSigninRQ
+{
+	string outlet_uid = 1;							// outlet id
+	string app_ver = 2;								//client versiondata
+	string profile_uid = 4;							// account UID
+	General.StoreChannel store_kind = 5;					// storedata
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message ReelSigninRS
+{
+	repeated General.EpicWinTickerEntry epicwin_list = 4;
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message OpenReelMatchRQ
+{
+	General.SlotCatalog reel_kind = 4;				// slot game type
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message OpenReelMatchRS
+{
+	repeated uint64 per_line_wagers = 1;			// PER LINE
+	General.ReelWindow placeholder_reels = 2;				// reel data before bet start
+	RotationRS pre_bonus_rotation_res = 3;			// SpinRS for select/pick before free spin
+	repeated uint64 total_wagers = 4;				// TOTAL BET list 1000, 10000
+	uint64 cur_member_phantom_token = 5;			// player coin data to refresh on client (server-side virtual coin)
+	ReplayBonusRotationsRS replay_res = 6;
+	repeated General.CreditStackList credits = 7;
+	int32 max_payout_rate = 12;						// MaxWin rate
+	int32 _crc = 16;								// checksum
+}
+
+message SnagMatchSelectRQ
+{
+	General.PickGameState snag_match_data = 1;		// pickgame data
+	General.SlotCatalog reel_kind = 4;				// current slot game type
+}
+
+message SnagMatchSelectRS
+{
+	bool ok_flag = 4;
+	int32 _crc = 9;									// checksum
+	string _reserved10 = 10;
+}
+
+message ChamberEnterAsObserverRQ
+{
+	int32 node_id = 1;								// server ID (RoomListInfo's server ID)
+	int32 chamber_no = 4;							// when user picks room number to join
+	bytes ctx_buf = 11;								// client data buffer
+	string ch_token = 12;							// Channel ID (refer to channel list data file)
+	int32 _crc = 16;								// checksum
+	int32 _reserved17 = 17;
+}
+
+message RefreshCiExpireRQ
+{
+	string native_id = 1;					// if direct id
+	string outlet_uid = 2;					// outlet UID (when logging into outlet)
+	string ci = 4;							// identity NICE API ci
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+	bytes _reserved16 = 16;
+}
+
+message RefreshCiExpireRS
+{
+	int32 _crc = 1;							// checksum
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _reserved12 = 12;
+}
+
+message InsertMateRQ
+{
+	uint64 member_idx = 4;							// player unique ID to add to friends
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message InsertMateRS
+{
+	MateDetail add_mate = 4;						// additionaldone friend. would be ideal not to send full list
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+
+
+message BuildBulletinRQ
+{
+	int32 _crc = 1;							// checksum
+	int32 _reserved2 = 2;
+}
+
+message BuildBulletinRS
+{
+	string min_ver = 1;						// min version
+	string latest_ver = 2;					// latest version
+	string notice = 4;						// update message
+	int32 _crc = 8;							// checksum
+	int32 _reserved9 = 9;
+}
+
+message DebugReelBoardRQ							// Slot game cheat protocol (dev)
+{
+	uint64 score_val = 2;
+	uint64 member_index = 4;
+	General.SlotCatalog reel_kind = 1;
+	int32 _crc = 7;									// checksum
+	bytes _reserved8 = 8;
+}
+
+message DiscRotationRQ
+{
+	bool buy_grand_flag = 1;						// grand spin purchase
+	uint64 total_wager = 2;
+	int32 choose_cnt = 4;							// current selection count
+	bool in_grand_flag = 5;							// current spin count selection
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message DiscRotationRS
+{
+	RotationRS rotation_res = 1;				// spin response
+	int32 choose_cnt = 4;							// current selection count
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+//////////////////////////////////// SyncUserInfo
+
+message AlignMemberDetailRQ
+{
+}
+
+message AlignMemberDetailRS
+{
+	General.ParticipantProfile member_info = 4;
+	int32 _crc = 9;									// checksum
+}
+
+// blackjack all players' card data
+message BJTileSwapRS
+{
+	repeated General.CardSet m2_cards = 1;				// player 2 card list (General.CardSet MAX 5, includes split cards)
+	repeated General.CardSet m4_cards = 2;				// player 4 card list (General.CardSet MAX 5, includes split cards)
+	repeated General.PlayingCard dealer_tiles = 3;			// dealer card list
+	repeated General.CardSet m1_cards = 4;				// player 1 card list (General.CardSet MAX 5, includes split cards)
+	repeated General.CardSet m3_cards = 5;				// player 3 card list (General.CardSet MAX 5, includes split cards)
+	repeated General.CardSet m5_cards = 6;				// player 5 card list (General.CardSet MAX 5, includes split cards)
+	repeated General.PlayingCard fresh_dealer_tiles = 7;	// dealer's new cards
+	repeated General.HandRank m1_outcomes = 8;			// player 1 card result (Blackjack, Bust, Great)
+	repeated int64 m1_authcode = 9;
+	repeated General.HandRank m2_outcomes = 10;			// player 2 card result (Blackjack, Bust, Great)
+	repeated int64 m2_authcode = 11;
+	repeated General.HandRank m3_outcomes = 12;			// player 3 card result (Blackjack, Bust, Great)
+	repeated int64 m3_authcode = 13;
+	repeated General.HandRank m4_outcomes = 14;			// player 4 card result (Blackjack, Bust, Great)
+	repeated int64 m4_authcode = 15;
+	repeated General.HandRank m5_outcomes = 16;			// player 5 card result (Blackjack, Bust, Great)
+	repeated int64 m5_authcode = 17;
+	bool intrusion_flag = 18;						// intrusion or reconnectwhenonly activation
+	bool stop_tile_anim = 19;						// stop card animation
+	bool dealer_blind_flip = 20;					// dealer's blind card open
+	bool member_blind_flip = 21;					// player's blind card open
+	General.HandRank dealer_outcome = 22;				// show Bust, Great etc. when dealer cards open.
+	// additional for intrusion handling
+	repeated bool member_covers = 25;				// player insurance flag
+	repeated bool member_equal_payouts = 26;		// player even money flag
+	repeated uint64 member_twin_downs = 27;			// player double down flag
+	repeated uint64 member_wager_amounts = 28;		// player bet amount
+	repeated uint64 member_pp_wager_amounts = 29;	// player pp bet amount
+	int32 _crc = 33;								// checksum
+	int32 priority_tier = 23;
+	int64 sync_epoch = 24;						// 동기화 기준 시각
+	uint32 feature_mask = 30;						// 기능 플래그 비트마스크
+	int32 split_depth = 31;
+	int32 node_hint = 32;						// 라우팅 힌트
+	string meta_tag = 34;
+}
+
+message ShiftChamberRQ
+{
+	string ch_token = 4;							// Channel ID (refer to channel list data file)
+	int32 reveal_delay_per_member = 12;				// holdem showdown wait per player, client-side (min 200, max 600, default 400ms)
+	int32 reveal_shared_delay = 13;					// holdem showdown community delay (default 300/800/500ms); max 3 community cards so 3 * delay
+	int32 _crc = 20;								// checksum
+}
+
+
+message SigninBountyRQ
+{
+	General.LoginRewardAction req_kind = 4;			// request type
+	int32 _crc = 9;									// checksum
+}
+message SigninBountyRS
+{
+	repeated string got_drop_list = 1;				// event name
+	repeated DropDetail drop_info_list = 4;			// event data
+	repeated string got_drop_now = 5;				// just-received event
+	int32 _crc = 9;									// checksum
+}
+
+message BJMatchOutcome
+{
+	uint64 member_idx = 1;
+	uint64 fund_after = 2;							// money after play (earned amount + insurance_money + Evenmoney)
+	General.ParticipantProfile member_info = 3;
+	repeated string matoutstring = 4;
+	string alias_label = 5;
+	uint64 rake_cut = 6;							// dealer fee
+	uint64 fund_before = 7;							// money before play
+	repeated BJOutcomeKind state_per_tile = 8;		// player_cards count same. Win/Lose/Draw judgment per play
+	repeated General.HandRank outcomes = 12;			// player_cards count same. card list per hand rank
+	uint64 cover_wager = 13;						// insurance amount against dealer blackjack
+	uint64 cover_payout = 14;						// when insurance bet against dealer blackjack (bet amount + reward amount = total; insurance 50K becomes 100K)
+	uint64 equal_payout = 15;						// when even money bet against dealer blackjack (receive reward equal to bet amount)
+	uint64 wager_amount = 16;						// [player] main bet amount (client displays main bet as sum of main + doubledown + split)
+	uint64 wager_payout = 17;						// [player] earned amount from this bet
+	repeated General.CardSet member_cards = 18;			// card list per player main card + split card (max 4) included
+	bool forfeit_flag = 19;							// surrender flag
+	int32 _crc = 22;								// checksum
+	int32 cache_ttl = 9;						// 캐시 유효시간(초)
+	int32 node_hint = 10;						// 라우팅 힌트
+	string audit_tag = 11;
+	string telemetry_tag = 20;
+}
+
+// loss limit period check
+message VerifyLossCapSpanRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message VerifyLossCapSpanRS
+{
+	General.LossLimitProfile loss_cap = 4;					// updated loss limit
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message InboxIndexRQ
+{
+	int32 page = 1;									// request page
+	int32 page_sz = 4;								// page size
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message InboxIndexRS
+{
+	int32 total_cnt = 1;							// total inbox count
+	int32 total_page = 2;							// total page count
+	repeated InboxDetail inbox_list = 4;			// inbox list
+	int32 page_sz = 5;								// page size
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message FetchMemberDetailRQ
+{
+	uint64 member_idx = 4;	// request player idx
+	bytes ctx_buf = 11;		// client data buffer
+	int32 _crc = 15;		// checksum
+	int32 _reserved16 = 16;
+}
+
+message FetchMemberDetailRS
+{
+	Ledger ledger = 1;
+	uint64 member_token = 2;
+	General.InPlayRecord chamber_log = 3;	// win/loss and earned currency in current room
+	uint64 member_idx = 4;	// request player idx
+	uint64 member_stack = 5;
+	int64 hold_daily_token = 6;				// holdem today accumulated coin (daily 0when reset)
+	int64 lbd_daily_stack = 7;				// low baduki today accumulated chip (daily 0when reset)
+	int64 lbd_daily_token = 8;				// low baduki today accumulated coin (daily 0when reset)
+	int64 hold_daily_stack = 9;				// holdem today accumulated chip (daily 0when reset)
+	bytes ctx_buf = 11;		// client data buffer
+	int32 _crc = 15;		// checksum
+}
+
+message BuildOutletRQ
+{
+	General.AccessChannelType outlet_kind = 1;	// AOS, IOS, PC, Native
+	string alias_label = 2;					// nickname
+	string native_id = 3;					// Native login direct id (5-12 chars alphanumeric)
+	string profile_uid = 4;					// account UID
+	bool night_alert_optin = 5;				// night push consent (9PM~8AM)
+	string outlet_token = 6;				// Platform auth token (FireBase: UserId)
+	string dev_meta = 7;					// DEVICE info
+	string native_key = 8;					// Native login password (8-16 chars: letters/digits/special)
+	bool alert_optin = 9;					// promotional push consent
+	string alert_token = 11;				// push token (Google, Apple)
+	string os_ver = 12;						// OS version
+	string app_ver = 14;					// app version
+	General.StoreChannel store_kind = 15;			// store info (no payment if no store on login)
+	bytes ctx_buf = 21;						// client data buffer
+	int32 _shard = 25;						// node tag
+	int32 client_rev = 10;
+	bool perf_sample_flag = 13;
+	int32 rollout_stage = 16;						// 단계적 배포용
+}
+
+message BuildOutletRS
+{
+	string outlet_uid = 1;					// outlet UID
+	string profile_uid = 3;					// account UID
+	General.AccessChannelType outlet_kind = 4;	// AOS, IOS, PC, Native
+	bytes ctx_buf = 21;						// client data buffer
+	int32 _crc = 26;						// checksum
+	int32 _reserved27 = 27;
+}
+
+message MidLookupByAliasRQ
+{
+	string alias_label = 4;							// user nickname to search (LIKE query)
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message MidLookupByAliasRS
+{
+	repeated TesterMemberDetail tester_infos = 4;	// searched user list
+	int32 _crc = 9;									// checksum
+}
+
+// play result message
+message MemberOutcome
+{
+	uint64 member_idx = 1;
+	uint64 fund_before = 2;							// money before play
+	uint64 rake_cut = 3;							// dealer fee
+	string alias_label = 4;
+	General.HandRank hand_rank = 5;							// baduki, holdem: hand rank
+	uint64 fund_after = 6;							// money after play
+	General.ParticipantProfile member_info = 7;
+	repeated General.PlayingCard cards = 8;					// baduki, holdem: hand rank cards
+	repeated General.PlayingCard hand_tiles = 12;			// holdem : hand cards
+	repeated General.PlayingCard kicker_tiles = 13;			// holdem : reflect result when kicker needed
+	map<int32, uint64> payout_per_hand_rank = 14;		// baccarat : player hand rank per earned money, Key [ General.HandRank ]
+	uint64 hand_rank_score = 25;						// server-side use
+	uint64 kicker_score = 26;						// server-side use
+	int32 rank_pos = 27;							// server-side use
+	double svr_fund_after = 28;						// money after play(serveruse)
+	double svr_rake_cut = 29;						// dealer fee(serveruse)
+	int32 _crc = 35;								// checksum
+	uint64 audit_seq = 9;
+	int32 ab_bucket = 10;						// A/B 테스트 버킷
+	int64 sync_epoch = 11;						// 동기화 기준 시각
+	int32 ledger_rev = 15;
+}
+
+//////////////////////////////////// Login Event
+message DropDetail
+{
+	string drop_name = 1;							// event name
+	string end_ts = 2;								// end time
+	string bounty = 3;								// reward content
+	int32 idx = 4;									// event idx
+	string start_ts = 5;							// start time
+	string trace_code = 6;							// code
+	string notice = 7;								// mail content to show in mailbox
+	int32 _crc = 12;								// checksum
+}
+
+message LossCapBannerRS							// server sends response only(notification type)
+{
+	int32 _crc = 1;									// checksum
+}
+
+// development test message
+message DebugFundsRQ
+{
+	uint64 fund_amount = 1;							// updated value
+	General.AssetKind fund_kind = 4;					// currency type
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message DebugFundsRS
+{
+	repeated General.ParticipantProfile members = 4;				// updated player data (when in room send all player data after cheat)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+// RoomJoinAsWatcherRQ response is handled by RoomJoinRS.
+
+message ChamberLeaveRQ
+{
+	int32 chamber_no = 4;							// room number
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message ChamberLeaveRS
+{
+	uint64 member_idx = 1;							// or user's player_idx
+	bool loss_cap_hit = 2;							// withdrawal due to loss limit
+	bool no_fund_flag = 3;							// when no money
+	int32 chamber_no = 4;							// room number
+	bool poll_expelled = 5;							// force kick by vote
+	int32 observer_cnt = 6;							// watcher count in room
+	bool no_member_flag = 7;						// withdraw due to no remaining users
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message RefreshReelRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	bytes _reserved12 = 12;
+}
+
+message RefreshReelRS
+{
+	General.ParticipantProfile member_info = 1;					// refresh player data
+	repeated General.TaskProgress atrium_goals = 2;			// lounge mission
+	General.LossLimitProfile loss_cap = 3;					// loss limit
+	Ledger ledger = 4;								// refresh daily data only (LB baduki, holdem, baccarat, blackjack, slot)
+	repeated General.TaskProgress daily_goals = 5;			// daily mission
+	bool inbox_refresh = 6;							// inbox refresh flag
+	repeated General.EpicWinTickerEntry epicwin_list = 7;
+	repeated General.TaskProgress trophies = 8;				// achievement
+	bytes ctx_buf = 11;								// client data buffer
+	uint64 refuel_stacks = 12;						// refilled chip
+	uint64 stack_refuel_left = 13;					// remaining chip refill count
+	uint64 refuel_tokens = 14;						// refilled coin
+	uint64 token_refuel_left = 15;					// remaining coin refill count
+	bool daily_reset_flag = 16;						// daydayreset
+	bool tier_stale = 17;							// membership expired
+	repeated string img_bulletins = 18;				// image notice
+	int32 _crc = 22;								// checksum
+	int32 throttle_ms = 9;						// 처리 지연 임계값
+	uint64 jackpot_pool_id = 10;
+	int32 node_hint = 19;						// 라우팅 힌트
+	bool near_miss_flag = 20;						// 니어미스 연출 여부
+	bytes _reserved23 = 23;
+}
+
+message ChamberPollReplyRQ
+{
+	bool agree_flag = 1;							// vote agreement (true: agree, false: disagree)
+	int32 poll_idx = 4;								// vote idx (valid in current room only)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message ChamberPollReplyRS
+{
+	int32 poll_idx = 1;								// vote idx (valid in current room only)
+	int32 no_cnt = 2;								// disagree vote count
+	uint64 poll_target_idx = 4;						// vote target idx
+	int32 yes_cnt = 5;								// agree count
+	bool ok_flag = 6;								// vote success (true if majority exceeded)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message AliasSwapRQ
+{
+	bool dup_check = 1;						// nickname duplicate check request
+	string alias_label = 4;					// to modify nickname
+	bytes ctx_buf = 11;						// client data buffer
+}
+
+message AliasSwapRS
+{
+	bool dup_check = 1;						// nickname duplicate check request
+	bool alias_swapped = 2;					// nickname change processed (refresh player required)
+	string alias_label = 4;					// to modify nickname
+	string alias_lock_until = 5;			// next next nickname change available time (refresh player required)
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+}
+
+message ReissueAuxKeyRQ
+{
+	string native_id = 1;					// if direct id
+	string outlet_uid = 2;					// outlet UID (when logging into outlet)
+	string ci = 4;							// identity NICE API ci
+	string dev_meta = 5;					// DEVICE info
+	string os_ver = 6;						// OS version
+	string app_ver = 7;						// app version
+	bytes ctx_buf = 11;						// client data buffer
+}
+
+message ReissueAuxKeyRS
+{
+	bytes ctx_buf = 11;						// client data buffer
+}
+
+message RefreshTermsOptinRQ
+{
+	string native_id = 1;					// if direct id
+	string outlet_uid = 2;					// outlet UID (when logging into outlet)
+	string ci = 4;							// identity NICE API ci
+	bytes ctx_buf = 11;						// client data buffer
+	bool night_promo_alert_optin = 12;		// night promotional info push consent
+	bool promo_alert_optin = 14;			// promotional info push consent
+	bool pii_optin = 15;					// personal info collection consent
+	bool match_optin = 17;					// game terms agreement
+	int32 _crc = 20;						// checksum
+}
+
+message RefreshTermsOptinRS
+{
+	bytes ctx_buf = 11;						// client data buffer
+}
+
+message BCTwinWagerRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message BCTwinWagerRS
+{
+	General.AssetKind fund_kind = 1;
+	uint64 fund_after = 2;
+	uint64 wager_member_idx = 4;					// bet player idx
+	uint64 fund_before = 5;
+	bytes ctx_buf = 11;								// client data buffer
+	map<int32, uint64> bc_wagers = 12;				// baccarat bet amount per hand rank (convert Key to General.HandRank)
+	int32 _crc = 15;								// checksum
+}
+
+message RevokeQuitMatchRQ
+{
+	string outlet_uid = 1;					// outlet UID
+	string native_id = 2;					// if direct id
+	string profile_uid = 4;					// account UID
+	string native_key = 5;					// password
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+	int32 _reserved16 = 16;
+}
+
+message RevokeQuitMatchRS
+{
+	int32 key_miss_cnt = 4;					// password fail count
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+	int32 _reserved16 = 16;
+}
+
+message MemberSwapAuxKeyRQ
+{
+	string new_aux_key = 1;							// sub password (auto XOR encryption)
+	string cur_aux_key = 4;							// sub password (auto XOR encryption)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MemberSwapAuxKeyRS
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	bytes _reserved12 = 12;
+}
+
+message ServiceNotice
+{
+	General.NoticeChannelType svc_notice_kind = 1; // system message type
+	bool expel_flag = 2;					// true when please redirect to login screen.
+	General.AnnouncementKind bulletin_kind = 3;
+	string notice = 4;						// system message. notify popup message on receive
+	string headline = 5;
+	repeated string img_files = 7;			//image filename
+	int32 _crc = 9;							// checksum
+}
+
+message BJBannerRS
+{
+	bool cover_banner = 1;							// insurance popup
+	uint64 member_idx = 4;							// player idx (includes dummy player idx)
+	bool equal_banner = 5;							// even money popup
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+// deposit account
+message DrainCashbackRQ
+{
+	uint64 drain_token = 4;							// withdraw coin
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message DrainCashbackRS
+{
+	uint64 drain_token = 1;							// withdraw coin
+	uint64 cashback_balance = 4;					// after withdraw deposit account balance
+	uint64 cur_token = 5;							// coin after withdraw
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message LookupMemberRQ
+{
+	string alias_label = 4;							// user nickname to search (LIKE query). special chars must be removed
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message LookupMemberRS
+{
+	repeated MateDetail looked_up_members = 4;		// searched player list (max 2 people)
+	int32 _crc = 9;									// checksum
+}
+
+message DebugReelRQ									// Slot game cheat protocol (dev)
+{
+	bool multi_debug = 1;							// true: multiplier 1+, false: mode end
+	bool scatter_debug = 4;							// true: scatter always 4+, false: mode end
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message DebugReelRS
+{
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+// remaining time until next step in active room
+message PhaseRemainRS
+{
+	uint64 phase_remain_ms = 1;						// remaining time, advances to next step when ms is 0.
+	int32 chamber_no = 4;							// room number
+}
+
+message FetchPhantomTokenRQ
+{
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message FetchPhantomTokenRS
+{
+	uint64 cur_member_phantom_token = 4;			// player coin after grand spin purchase
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MemberApplyAuxKeyRQ
+{
+	string aux_key = 4;								// sub password (auto XOR encryption)
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message MemberApplyAuxKeyRS
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message RevokeMatchEngageRQ
+{
+	int32 seat_no = 4;								// game join slot (1, 2, 3, 4 ~~ slot number)
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _crc = 25;								// checksum
+}
+
+message RevokeMatchEngageRS
+{
+	uint64 member_idx = 1;							// player_idx of user who canceled join wait
+	int32 seat_no = 4;								// game join slot (1, 2, 3, 4 ~~ slot number)
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _crc = 25;								// checksum
+}
+
+message ReelBountyDrop
+{
+	string end_ts = 2;
+	string drop_code = 4;						//event code
+	string start_ts = 5;						//start time
+	string bounty = 1;
+	int32 _crc = 11;							// checksum
+}
+
+message BuildNativeOutletRQ
+{
+	string native_key = 1;					// password (ASE 128 encrypted storage)
+	string ci = 2;							// identity NICE API ci
+	string dev_meta = 3;					// DEVICE info
+	string os_ver = 4;						// OS version
+	string enc_ts = 5;						// identity NICE API processing time
+	string app_ver = 6;						// app version
+	string native_id = 7;					// account id to create (5-12 chars alphanumeric)
+	bool dup_check = 8;						// made_id duplicate check request
+	string req_seq = 13;					// request sequence
+	General.StoreChannel store_kind = 14;			// store info (no payment if no store on login)
+	string recv_blob = 15;					// receivedata
+	bytes ctx_buf = 16;						// client data buffer
+	int32 _crc = 20;						// checksum
+	uint32 checksum_v2 = 9;						// 신규 체크섬(미적용)
+	int32 shard_hint = 10;
+	int32 build_channel = 11;
+}
+
+message BuildNativeOutletRS
+{
+	bool dup_check = 1;						// made_id duplicate check request
+	string profile_uid = 3;					// account UID
+	string outlet_uid = 7;					// outlet UID
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 16;						// checksum
+}
+
+// active room's state change message
+message MatchStateSwapRS
+{
+	int32 match_phase = 1;				// play phase change (server PlayPhase value)
+	uint64 phase_remain_ms = 2;						// current step remaining time (msec 1/1000 sec)
+	General.PlayCategory match_kind = 4;					// active game type
+	uint64 lead_idx = 5;							// boss idx
+	bool bc_intro_flag = 6;							// baccarat opening display flag
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+// current must send in bet order.
+message DebugHandSwapRQ
+{
+	repeated General.PlayingCard swap_cards_2 = 1;
+	repeated General.PlayingCard swap_cards_4 = 2;
+	repeated General.PlayingCard shared_cards = 3;			// community card change
+	repeated General.PlayingCard swap_cards_1 = 4;			// cards to change
+	repeated General.PlayingCard swap_cards_3 = 5;
+	repeated General.PlayingCard swap_cards_5 = 6;
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message DebugHandSwapRS
+{
+	repeated General.PlayingCard swap_cards_2 = 1;
+	repeated General.PlayingCard swap_cards_4 = 2;
+	repeated General.PlayingCard shared_cards = 3;			// community card change
+	repeated General.PlayingCard swap_cards_1 = 4;			// changed card
+	repeated General.PlayingCard swap_cards_3 = 5;
+	repeated General.PlayingCard swap_cards_5 = 6;
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+// server sends Ping request.
+// currently only Ping has server req, client res.
+message HeartbeatRQ
+{
+	int64 hb_val = 4;
+	int32 _crc = 9;							// checksum
+	int32 _reserved10 = 10;
+}
+
+message HeartbeatRS
+{
+	int64 hb_val = 4; // server sent ping_value value send as is.
+	int32 _crc = 9;							// checksum
+	int32 _reserved10 = 10;
+}
+
+// LB baduki initial card distribution
+message SeedDealoutRS
+{
+	repeated MatchWagerRS blind_wagers = 1;	// sb, bb, gb bet data
+	map<uint64, General.CardSet> member_cards = 4;		// player card list (low baduki initial card distribution, holdem hand cards)
+	uint64 seed_funds = 5;							// seed money value to deduct from users other than sb/bb/gb
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+message MandatoryNotice
+{
+	string notice = 1;								// system message. notify popup message on receive
+	string headline = 4;
+	int32 _crc = 5;									// checksum
+}
+
+message MigrateNodeRQ
+{
+	string outlet_uid = 1;					// outlet UID
+	General.StoreChannel store_kind = 2;			// store info (no payment if no store on login). to be removed.
+	string profile_uid = 4;					// account UID
+	string app_ver = 5;						// app version
+	bytes ctx_buf = 11;						// client data buffer
+	int32 _crc = 15;						// checksum
+}
+
+message MigrateNodeRS
+{
+	General.ParticipantProfile member_info = 1;			// player data
+	General.LossLimitProfile loss_cap = 2;			// loss limit
+	Ledger ledger = 3;						// records (LB baduki, holdem, baccarat, blackjack, slot)
+	string svr_ts = 4;						// server time. if sync needed, set client time to server time.
+	repeated General.AvatarProfile skins = 5;		// player avatar list
+	// records related -> deciding whether to split packet or include in login response
+	repeated General.PeakRecordSummary top_log_list = 9;	// all-time record list
+	bytes ctx_buf = 11;						// client data buffer
+	bool night_alert_optin = 13;			// night push consent (9PM~8AM)
+	bool alert_optin = 14;					// promotional push consent
+	// red dot handling
+	bool inbox_pending = 15;				// inbox alert
+	General.LoungeBenefitEvent atrium_drop = 19;	// lounge event (check active state within start/end date)
+	int32 _v = 25;							// spec ver
+	string meta_tag = 6;
+	string telemetry_tag = 7;
+}
+
+// vote eligibility granted notification
+message ChamberPollEligibleRS
+{
+														// no content required
+	int32 _crc = 1;									// checksum
+	int32 _reserved2 = 2;
+}
+
+message BCDebugRQ
+{
+	repeated General.PlayingCard cards = 1;					// card list
+	int32 chamber_no = 4;							// chamber number to cheat (uncreated or existing chamber)
+	int32 cut_tile_no = 5;							// STOP card occurred order
+	bool clear_debug = 12;							// reset previously set QA values.
+}
+
+message BCDebugRS
+{
+}
+
+// loss limit
+message SwapLossCapRQ
+{
+	int32 block_span_swap = 1;						// sanction time change request
+	uint64 loss_cap_amt = 4;						// loss limit amount
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message SwapLossCapRS
+{
+	General.LossLimitProfile loss_cap = 4;					// updated loss limit
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message ExitReelMatchRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message ExitReelMatchRS
+{
+	uint64 member_token = 1;						// player coin data (please refresh lobby)
+	bool pending_bonus_rotations = 4;				// unprocessed spin flag (popup use)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// morning/lunch/evening card change
+message MatchHandSwapRQ
+{
+	repeated General.PlayingCard swap_cards = 4;			// cards to change
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message MatchHandSwapRS
+{
+	int32 swap_card_cnt = 1;						// changed card count
+	repeated General.PlayingCard fresh_cards = 2;			// new cards list, to self only
+	uint64 swap_member_idx = 4;						// player idx who changed card
+	repeated General.PlayingCard cards = 5;					// full new card list list, to self only
+	repeated General.PlayingCard discard_cards = 6;			// discarded cards list, to self only
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message FetchBuiltOutletsByCidRQ
+{
+	string enc_ts = 1;						// identity NICE API processing time
+	string ci = 3;							// identity NICE API ci
+	bytes ctx_buf = 21;						// client data buffer
+	int32 _crc = 25;						// checksum
+}
+
+message FetchBuiltOutletsByCidRS
+{
+	repeated string native_ids = 1;			// direct account id list
+	int32 built_outlet_cnt = 3;				// outlet count created with ci
+	bytes ctx_buf = 21;						// client data buffer
+	int32 _v = 24;							// spec ver
+	bytes _reserved25 = 25;
+}
+
+message SigninRQ
+{
+	string outlet_uid = 1;		// outlet id
+	string dev_meta = 2;		// device info
+	string native_id = 3;		// Native login direct id (5-12 chars alphanumeric)
+	string profile_uid = 4;		// account UID
+	string os_ver = 5;			// OS version
+	string app_ver = 6;			// app version
+	string native_key = 7;		// Native login password (8-16 chars: letters/digits/special)
+	string aux_key = 8;			// 2th password
+	bytes ctx_buf = 11;			// client data buffer
+	General.StoreChannel store_kind = 12;	// store info (no payment if no store on login)
+	string alert_token = 14;	// push token
+	int32 _shard = 20;			// node tag
+	string client_locale = 9;						// 클라 로케일
+	int32 cache_ttl = 10;						// 캐시 유효시간(초)
+	int32 _reserved21 = 21;
+}
+
+message SigninRS
+{
+	General.ParticipantProfile member_info = 1;			// player data
+	General.LossLimitProfile loss_cap = 2;			// loss limit
+	Ledger ledger = 3;						// records (LB baduki, holdem, baccarat, blackjack, slot)
+	string svr_ts = 4;						// server time. if sync needed, set client time to server time.
+	repeated General.AvatarProfile skins = 5;		// player avatar list
+	int32 aux_key_miss_cnt = 6;				// sub password retry count
+	bool first_signin = 7;					// player first login flag (true: attendance activation required, check inbox rewards)
+	int32 key_miss_cnt = 8;					// password retry count
+	// records related -> deciding whether to split packet or include in login response
+	repeated General.PeakRecordSummary top_log_list = 9;	// all-time record list
+	bytes ctx_buf = 11;						// client data buffer
+	string quit_planned_ts = 12;			// scheduled withdrawal date (can cancel before expiry)
+	string profile_uid = 13;				// account UID
+	// red dot handling
+	bool inbox_pending = 15;				// inbox alert
+	string block_begin = 16;				// sanction start time
+	string block_end = 17;					// sanction end time
+	string block_cause = 18;				// sanction reason
+	General.LoungeBenefitEvent atrium_drop = 19;	// lounge event (check active state within start/end date)
+	string outlet_uid = 22;					// outlet UID
+	bool tier_stale = 23;					// membership expired
+	bool alert_optin = 24;					// promotional push consent
+	bool night_alert_optin = 25;			// night push consent (9PM~8AM)
+	ShiftAtriumRS shift_atrium_res = 26;	// server change
+	int32 _v = 30;							// spec ver
+	bool compliance_flag = 10;
+	int32 node_hint = 14;						// 라우팅 힌트
+	string captcha_token = 20;
+	int32 ab_bucket = 21;						// A/B 테스트 버킷
+	int32 cache_ttl = 27;						// 캐시 유효시간(초)
+	bool session_renew_flag = 28;						// 세션 연장 여부
+}
+
+// full result screen
+message MatchSideOutcomeRS
+{
+	repeated BJSideOutcome pp_outcomes = 4;			// ppresult
+}
+
+message RevokeWagerRQ
+{
+	bool pp_wager_flag = 4;							// pp cancel flag
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message RevokeWagerRS
+{
+	General.AssetKind fund_kind = 1;					// Money type
+	uint64 fund_after = 2;							// Money Value after bet cancel
+	uint64 member_idx = 4;							// player idx
+	uint64 fund_before = 5;							// Money Value before bet cancel
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+// slot change in active room
+message SeatSlideRQ
+{
+	int32 seat_to_slide = 4;						// target slot number
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message SeatSlideRS
+{
+	int32 seat_prev = 1;							// slot movebefore slot number
+	repeated General.ParticipantProfile members = 2;				// active user data
+	uint64 member_idx = 4;							// player who requested slot move idx
+	int32 seat_next = 5;							// slot moveafter slot number
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message SysFaultRS
+{
+	int32 _crc = 1;						// checksum
+}
+
+message RotationEchoRQ
+{
+	uint64 rotation_id = 1;							// spin sequence
+	uint64 echo_id = 4;								// echo unique id (SpinRS identifier)
+	int32 _crc = 5;									// checksum
+	int32 _reserved6 = 6;
+}
+
+message RotationEchoRS
+{
+	int32 _crc = 1;									// checksum
+}
+
+message MatchEngageRQ
+{
+	int32 seat_no = 4;								// game join slot (1, 2, 3, 4 ~~ slot number)
+	bytes ctx_buf = 21;								// client data buffer
+	int32 _crc = 25;								// checksum
+	int32 _reserved26 = 26;
+}
+
+message FundCapBannerRS							// server sends response only(notification type)
+{
+	General.AssetKind cap_fund_kind = 1;				// limit exceeded done currency type
+	bool tier_buy_flag = 2;							// class purchase notification
+	General.PlayCategory cap_match_kind = 4;				// limit exceeded occurred done game type
+	bool inbox_check = 5;							// true: delivered to inbox. notify required
+	int32 _crc = 7;									// checksum
+}
+
+message RefreshAlertRQ
+{
+	bool night_promo_alert_optin = 1;
+	bool alert_optin = 4;
+	bytes ctx_buf = 11;					// client data buffer
+	int32 _crc = 15;					// checksum
+	int32 _reserved16 = 16;
+}
+
+message RefreshAlertRS
+{
+	bool night_promo_alert_optin = 1;
+	bool alert_optin = 4;
+	bytes ctx_buf = 11;					// client data buffer
+	int32 _crc = 15;					// checksum
+}
+
+message DupTunnelRQ
+{
+	int32 _crc = 1;							// checksum
+	bytes _reserved2 = 2;
+}
+
+message DupTunnelRS
+{
+}
+
+// full result screen
+message SpecialOutcomes
+{
+	repeated MemberOutcome baccarat = 1;			// baccarat player result: baccarat doesn't use winners/losers
+	repeated BJMatchOutcome blackjack = 2;			// blackjack play result
+}
+
+message NumberStats
+{
+	repeated int32 hit = 1;							// recent winning numbers: 20
+	repeated int32 hot = 2;							// hot number
+	repeated int32 cold = 3;							// cold number
+}
+
+message MatchOutcomeRS
+{
+	General.AssetKind fund_kind = 1;
+	repeated MemberOutcome bottom_set = 2;
+	SpecialOutcomes special_outcomes = 3;			// per-game-type outcome (baccarat/blackjack)
+	General.PlayCategory match_kind = 4;
+	repeated MemberOutcome top_set = 5;
+	repeated General.WinningHandHistory win_log = 6;
+	repeated General.PlayingCard dealer_tiles = 8;			// blackjack dealer card. log use only. don't reference from client.
+	bool quick_reveal = 12;							// immediate open (for re-login)
+	NumberStats number_stats = 13;					// roulette hit/hot/cold number history
+	string meta_tag = 9;
+	string migration_tag = 10;
+	uint64 session_seed = 11;
+}
+
+message ResetLossCapRQ
+{
+	string alias_label = 4;							// nickname
+	int32 _crc = 9;									// checksum
+	bytes _reserved10 = 10;
+}
+
+message ResetLossCapRS
+{
+	General.LossLimitProfile loss_cap = 4;					// loss limit
+	int32 _crc = 9;									// checksum
+	int32 _reserved10 = 10;
+}
+
+message RotationRQ
+{
+	int32 auto_rotation_max = 1;					// set auto spin count (-1 infinite, 0 none)
+	uint64 total_wager = 2;
+	int32 auto_rotation_cur = 4;					// current auto spin count (defalut 0)
+	bool buy_grand_flag = 5;						// True when grand spin purchased, else FALSE
+	int32 match_kind = 6;
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message RotationRS
+{
+	int32 bonus_rotation_cnt = 1;					// free spin count
+	int32 res_cnt = 2;
+	repeated Rotation rotations = 4;				// free spin data (1 base spin + free_spin_count)
+	bool grand_ok = 5;								// True if purchased, else FALSE
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message Rotation
+{
+	uint64 member_token_get = 1;					// spin earned coin
+	General.SpinMode rotation_kind = 2;				// spin type (Normal, Free, Grand)
+	uint64 rotation_id = 3;							// spin sequence
+	General.ReelWindow initial_reels = 4;					// initial reel data
+	uint64 member_token_total = 5;					// player owned coin
+	uint64 echo_id = 6;								// echo unique id (must send both spin_id values as pair when notifying server)
+	General.ScatterHitInfo scatter_meta = 7;			// scatter data
+	int32 cur_bonus_rotation_seq = 12;				// currently active free spin (if any)
+	int32 total_bonus_rotation_cnt = 13;			// total free spin count
+	repeated int64 reel_multipliers = 14;			// multiplier per reel
+	int64 wager_amount = 15;						// bet amount (ack reduces bet amount)
+	int64 token_before_rotation = 16;				// previously owned currency before spin (needed for rollback when Total Bet changes)
+	sint32 multi_cnt = 17;							// multiplier count
+	bool max_payout_hit = 18;						// spin ends if MaxWin exceeded
+	repeated General.ComboOutcome combos = 22;				// Combo data
+	General.LineHitInfo line_hits = 23;					// Line Reel hit info
+	General.WaysHitInfo ways_hits = 24;
+	repeated General.RespinWindow respin = 25;
+	repeated General.CreditStackList credits = 26;
+	repeated General.CreditStackList snag_credits = 27;
+	repeated General.MysteryReelOutcome mystery_reels = 31;	// only changed mystery symbol data
+	int32 cur_match_kind = 32;
+	repeated int32 need_val = 33;
+	General.PickSpinOptionList choose_rotation_item_list = 34;	// /select spin
+	repeated General.ReelSymbol wild_sym_before = 35;
+	repeated General.ReelSymbol wild_sym_after = 36;
+	General.PickGameState snag_match_data = 37;
+	repeated bool need_flag = 38;
+	repeated int32 reelset_num = 42;				// reelset number
+	repeated int32 reelset_idx = 43;				// reelset idx
+	// simulator data area; to be controlled ON/OFF by server
+	int64 payout_total = 52;						// winning amount
+	sint32 multi_rate_sum = 53;						// multiplier rate sum
+	sint32 overlay_cnt = 54;						// overlay count
+	sint32 overlay_rate_sum = 55;					// overlay rate sum
+	sint32 scatter_cnt = 56;						// scatter count sum (incl. free spin)
+	sint32 bonus_rotation_cnt = 57;					// free spin count
+	sint32 extra_bonus_rotation_cnt = 58;			// additional free spin count
+	int32 _crc = 63;								// checksum
+	uint32 spin_multiplier_cap = 8;						// 스핀 배수 상한
+	uint64 trace_id = 9;						// 로그 추적용
+	int32 client_rev = 10;
+	bool bonus_trigger_flag = 11;
+	uint32 feature_mask = 19;						// 기능 플래그 비트마스크
+	string extra_payload = 20;						// 확장 데이터
+	uint64 session_seed = 21;
+	int32 payline_variant = 28;
+}
+
+// active room list request
+message ChamberIndexRQ
+{
+	repeated string ch_tokens = 1;					// Channel ID (refer to channel list data file)
+	General.PlayCategory match_kind = 4;					// game type
+	int32 page_sz = 8;								// page size; defaults to 10 server-side if unset
+	int32 start_pos = 9;							// start idx
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message ChamberIndexRS
+{
+	repeated string ch_tokens = 1;					// Channel ID (refer to channel list data file)
+	repeated General.RoomListEntry chamber_list = 2;	// room list
+	General.PlayCategory match_kind = 4;					// game type
+	int32 total_cnt = 5;							// total count
+	int32 page_sz = 8;								// page size
+	int32 start_pos = 9;							// start idx
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+// mailbox
+
+message InboxDetail
+{
+	General.InboxReason inbox_kind = 1;					// inbox type
+	General.AssetKind fund_kind = 2;					// money type (Coin)
+	uint64 cnt = 3;									// count (MoneyType if Money Value)
+	General.GrantItemKind bounty_kind = 4;				// reward type
+	uint64 inbox_idx = 5;							// inbox idx (required for inbox delete etc.)
+	string expire_ts = 6;							// valid period (2024-12-12 13:00:00)
+	int32 item_no = 7;								// item type / avatar type vary by type, see with caution
+	string headline = 8;							// inbox title
+	uint64 span = 12;								// period setting
+	General.InboxState inbox_state = 13;				// inbox state
+	string memo = 14;								// inbox content
+	int32 _crc = 18;								// checksum
+	uint64 export_batch_id = 9;
+	int32 ledger_rev = 10;
+}
+
+
+message MateIndexRQ
+{
+}
+
+message MateIndexRS
+{
+	repeated MateDetail mate_members = 4;			// friend list (max 20 people)
+}
+
+// missions, achievements
+
+message FetchGoalsRQ
+{
+	General.TaskCategory trophy_kind = 4;				// requested achievement type (sends all if value is empty)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message FetchGoalsRS
+{
+	repeated General.TaskProgress atrium_goals = 1;			// lounge mission
+	repeated General.TaskProgress daily_goals = 4;			// daily mission
+	repeated General.TaskProgress trophies = 5;				// achievement
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message OpenMatchRQ
+{
+	General.PlayCategory match_kind = 4;
+	bytes ctx_buf = 11;		// client data buffer
+	int32 _crc = 15;		// checksum
+	int32 _reserved16 = 16;
+}
+message GotDrop
+{
+	string drop_name = 1;							//received event name
+	int32 idx = 4;									// idx
+	int32 _crc = 5;									// checksum
+}
+
+message VaultTakeRQ
+{
+	uint64 take_tokens = 1;							// withdraw coin
+	uint64 take_stacks = 4;							// withdraw chip
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message VaultTakeRS
+{
+	uint64 tokens = 1;								// coin
+	uint64 vault_tokens = 2;						// safe coin
+	uint64 stacks = 4;								// chip
+	uint64 vault_stacks = 5;						// safe chip map
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message FetchGoalBountyRQ
+{
+	General.TaskCategory trophy_kind = 1;				// achievement type
+	int32 goal_id = 4;								// mission/achievement id for reward
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message FetchGoalBountyRS
+{
+	uint64 bounty_stack = 1;						// received reward chip (must add to player chip)
+	uint64 bounty_token = 4;						// received reward coin (must add to player coin)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message BCSkipWagerRQ
+{
+	int32 _crc = 1;									// checksum
+	bytes ctx_buf = 11;								// client data buffer
+	bytes _reserved12 = 12;
+}
+
+message BCSkipWagerRS
+{
+	uint64 member_idx = 4;							// player idx
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message SwapInboxStateRQ
+{
+	string key = 1;								//PW
+	General.InboxState inbox_state = 4;			//MailState
+	int32 _crc = 5;								// checksum
+}
+
+message TesterMemberDetail
+{
+	uint64 member_idx = 1;							// unique ID
+	string alias_label = 4;							// nickname
+	int32 _crc = 5;									// checksum
+}
+
+// QA Tool Messages
+
+// blackjack QA tool cheat
+message BJDebugRQ
+{
+	int32 cut_tile_no = 1;							// STOP card occurred order
+	repeated General.PlayingCard m0_cards = 2;				// player card list
+	repeated General.PlayingCard m2_cards = 3;				// player card list
+	int32 chamber_no = 4;							// chamber number to cheat (uncreated or existing chamber)
+	repeated General.PlayingCard dealer_tiles = 5;			// dealer card list to appear each time
+	repeated General.PlayingCard m1_cards = 6;				// player card list
+	repeated General.PlayingCard m3_cards = 7;				// player card list
+	repeated General.PlayingCard m4_cards = 8;				// player card list
+	bool clear_debug = 12;							// reset previously set QA values.
+	int32 _crc = 16;								// checksum
+}
+
+message BJDebugRS
+{
+}
+
+message BuildEchoLeftRotationsRQ
+{
+	bytes ctx_buf = 11;								// client data buffer
+}
+
+message BuildEchoLeftRotationsRS
+{
+	uint64 cur_member_token = 4;					// player owned coin
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	bytes _reserved16 = 16;
+}
+
+// safe deposit/withdraw
+message VaultStashRQ
+{
+	uint64 stash_tokens = 1;						// deposit coin
+	uint64 stash_stacks = 4;						// deposit chip
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+message VaultStashRS
+{
+	uint64 tokens = 1;								// coin
+	uint64 vault_tokens = 2;						// safe coin
+	uint64 stacks = 4;								// chip
+	uint64 vault_stacks = 5;						// safe chip map
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+	int32 _reserved16 = 16;
+}
+
+// 손실 한도 변경 전 선택 가능한 후보 값 조회 (SwapLossCap 호출 전 클라가 선택지로 사용)
+message LossCapOptionsListRQ
+{
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}
+
+message LossCapOptionsListRS
+{
+	repeated uint64 loss_cap_amt_options = 1;		// 선택 가능한 손실 한도 금액 후보
+	repeated int32 block_span_swap_options = 2;		// 선택 가능한 차단 시간 후보 (단위: 시간)
+	bytes ctx_buf = 11;								// client data buffer
+	int32 _crc = 15;								// checksum
+}

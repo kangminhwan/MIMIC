@@ -3,6 +3,7 @@ using UnityEngine.UI;
 namespace Mimic.UI
 {
     [AddComponentMenu("MIMIC/UI/Rounded Panel")]
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class RoundedPanel : MaskableGraphic
     {
         [SerializeField] private float radius = 20;

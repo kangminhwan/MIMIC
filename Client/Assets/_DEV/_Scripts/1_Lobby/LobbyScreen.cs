@@ -22,6 +22,7 @@ namespace Mimic.Screens
             quickStart.onClick.AddListener(() =>
             {
                 var table = Game.Data.Lobby?.Tables.FirstOrDefault(t => t.Players < t.Capacity);
+                if (table == null && Game.NativeMode) { Game.Run(Game.CreateTable); return; }
                 if (table == null) Game.SetStatus("입장 가능한 테이블이 없습니다. 새로고침해 주세요.", true);
                 else Game.Run(() => Game.Join(table.TableId));
             });
@@ -33,7 +34,7 @@ namespace Mimic.Screens
             greeting.text = Game.Data.DisplayName + "님, 좋은 한 판 되세요.";
             accountName.text = Game.Data.AccountName;
             balance.text = Game.Data.DemoChips.ToString("N0");
-            connection.text = Game.Network.Client?.IsConnected == true ? "● 연결됨" : "○ 연결 확인 중";
+            connection.text = Game.Network.IsConnected ? "● 연결됨" : "○ 연결 확인 중";
             int count = Game.Data.Lobby?.Tables.Count ?? 0;
             tableCount.text = "플레이 가능한 테이블  " + count;
             emptyState.SetActive(count == 0);
@@ -41,9 +42,9 @@ namespace Mimic.Screens
             for (int i = 0; i < cards.Count; i++)
             {
                 cards[i].gameObject.SetActive(i < count);
-                if (i < count) cards[i].Bind(Game.Data.Lobby.Tables[i], Game.Busy, id => Game.Run(() => Game.Join(id)));
+                if (i < count) cards[i].Bind(Game.Data.Lobby.Tables[i], Game.Busy, id => Game.Run(() => Game.Join(id)), Game.NativeMode);
             }
-            quickStart.interactable = !Game.Busy && count > 0; refresh.interactable = logout.interactable = !Game.Busy;
+            quickStart.interactable = !Game.Busy && (count > 0 || Game.NativeMode); refresh.interactable = logout.interactable = !Game.Busy;
         }
     }
 }

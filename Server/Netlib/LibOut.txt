@@ -1,0 +1,9 @@
+.exp
+.ilk
+.obj
+.log
+.idb
+.tlog
+.pdb
+.dll
+.lastbuildstate

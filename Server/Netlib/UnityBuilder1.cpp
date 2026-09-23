@@ -1,0 +1,58 @@
+/* 
+ * Copyright 2017. AwesomePig Corporation all rights reserved. 
+*/
+
+#define unity_builder
+/*
+ * 전역 변수 중복 선언 에러가 걸리면 아래 define을 사용해서 해결하세요! 
+*/
+#define Netlib_global_extern_initialize
+
+#include "Buffer\cBuffer.cpp"
+#include "FileLoader\cIniFileLoader.cpp"
+#include "FileLoader\csvFileLoader.cpp"
+#include "IOCP\cIocp.cpp"
+#include "IOCP\cIocpConnector.cpp"
+#include "IOCP\cIocpContext.cpp"
+#include "IOCP\cIocpOv.cpp"
+#include "IOCP\cOverlapped.cpp"
+#include "IOCP\cSocket.cpp"
+#include "Manager\cCommandQueueManager.cpp"
+#include "Manager\cLogManager.cpp"
+#include "Manager\cSessionManager.cpp"
+#include "Manager\cThreadManager.cpp"
+#include "Manager\cWebServerManager.cpp"
+#include "Manager\ServerManager.cpp"
+#include "MiniDump\cMiniDump.cpp"
+#include "Network\cContextPooler.cpp"
+#include "Network\cDisPatcher.cpp"
+#include "Network\cNetWork.cpp"
+#include "Network\cPacketStack.cpp"
+#include "Network\cServerSocket.cpp"
+#include "Queue\cBaseQueueElement.cpp"
+#include "Queue\cCommandQueue.cpp"
+#include "Queue\cCommandQueueElement.cpp"
+#include "Queue\cIocpQueue.cpp"
+#include "Queue\cLogQueue.cpp"
+#include "Queue\cLogQueueElement.cpp"
+#include "Queue\cWebQueue.cpp"
+#include "Queue\cWebQueueElement.cpp"
+#include "Redis\cRedisManager.cpp"
+#include "ResourceMonitor\cResourceInfo.cpp"
+#include "RestSdkHttp\restsdkHttp.cpp"
+#include "Scheduler\cScheduler.cpp"
+#include "Session\cSession.cpp"
+#include "Thread\cBaseThread.cpp"
+#include "Thread\cCommandThread.cpp"
+#include "Thread\cLogThread.cpp"
+#include "Thread\cWebThread.cpp"
+#include "Thread\cWorkerThread.cpp"
+#include "Timer\cTimer.cpp"
+#include "UdpModule\cIocpUDP.cpp"
+#include "UdpModule\cUDPDispatcher.cpp"
+#include "UdpModule\cUDPIOCompletionData.cpp"
+#include "UdpModule\cUDPIocpOv.cpp"
+#include "UdpModule\cUDPSession.cpp"
+#include "UdpModule\cUDPSessionManager.cpp"
+#include "UdpModule\cUdpSocket.cpp"
+#include "WinInet\cWinInet.cpp"

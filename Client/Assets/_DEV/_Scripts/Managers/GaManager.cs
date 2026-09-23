@@ -14,6 +14,7 @@ namespace Mimic.Managers
         public const string TitleScene = "0_Title", LoginScene = "0_Login", LobbyScene = "1_Lobby", TableScene = "2_Holdem";
         public SessionData Data { get; } = new SessionData();
         public NtManager Network { get; } = new NtManager();
+        public bool NativeMode => config != null && config.nativeTableServer;
         public bool Busy { get; private set; }
         public string Status { get; private set; } = "";
         public bool StatusIsError { get; private set; }
@@ -86,8 +87,14 @@ namespace Mimic.Managers
                 var session = await login();
                 Data.PlayerId = session.PlayerId; Data.DisplayName = session.DisplayName;
                 Data.AccountName = Network.Session.AccountName; Data.DemoChips = Network.Session.DemoChips;
-                Network.Client.Received += Receive;
-                Network.Client.Disconnected += Disconnected;
+                Network.Received -= Receive; Network.Received += Receive;
+                Network.Disconnected -= Disconnected; Network.Disconnected += Disconnected;
+                Network.TableLeft -= NativeTableLeft; Network.TableLeft += NativeTableLeft;
+                if (NativeMode && Network.TableState?.Snapshot != null)
+                {
+                    subscribedToTable = true; Data.Table = Network.TableState.Snapshot.Clone(); Data.Phase = AppPhase.Table;
+                    await Navigate(TableScene); SetStatus(""); return;
+                }
                 await RefreshLobby(); Data.Phase = AppPhase.Lobby;
                 await Navigate(LobbyScene); SetStatus("로비에 연결되었습니다.");
             }
@@ -96,6 +103,7 @@ namespace Mimic.Managers
         private void Receive(Envelope message)
         {
             if (!subscribedToTable || message.Snapshot == null) return;
+            if (NativeMode && Network.Session != null) Data.DemoChips = Network.Session.DemoChips;
             Data.Table = message.Snapshot; Data.Phase = AppPhase.Table; Changed?.Invoke();
             if (SceneManager.GetActiveScene().name != TableScene) _ = NavigateSafely(TableScene);
         }
@@ -115,10 +123,22 @@ namespace Mimic.Managers
         public async Task Join(uint tableId)
         {
             subscribedToTable = true;
-            try { await Network.RequestAsync(new Envelope { JoinTable = new JoinTableRequest { TableId = tableId } }); SetStatus("모든 플레이어가 준비하면 시작합니다."); }
+            try { await Network.RequestAsync(new Envelope { JoinTable = new JoinTableRequest { TableId = tableId } }); SetStatus(NativeMode ? "2명 이상 입장 후 시작 담당자가 시작할 수 있습니다." : "모든 플레이어가 준비하면 시작합니다."); }
             catch { subscribedToTable = false; throw; }
         }
-        public async Task Ready() { await Network.RequestAsync(new Envelope { Ready = new ReadyRequest { Ready = true } }); SetStatus("준비 완료! 다른 플레이어를 기다리고 있습니다."); }
+        public async Task CreateTable()
+        {
+            subscribedToTable = true;
+            try { await Network.CreateTableAsync(); }
+            catch { subscribedToTable = false; throw; }
+        }
+        public Task BetNative(General.TableAction action) => Network.BetNative(action);
+        private void NativeTableLeft()
+        {
+            subscribedToTable = false; Data.Table = null; Data.Phase = AppPhase.Lobby;
+            _ = NavigateSafely(LobbyScene);
+        }
+        public async Task Ready() { await Network.RequestAsync(new Envelope { Ready = new ReadyRequest { Ready = true } }); if (NativeMode) { SetStatus(""); return; } SetStatus("준비 완료! 다른 플레이어를 기다리고 있습니다."); }
         public async Task Leave()
         {
             await Network.RequestAsync(new Envelope { LeaveTable = new Empty() });

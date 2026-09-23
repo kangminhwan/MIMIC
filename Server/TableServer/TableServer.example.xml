@@ -1,0 +1,124 @@
+<Configuration>
+  <!-- Server Configuration -->
+  <!-- Do not edit without programmer agreement -->
+  <SERVER>
+    <AppName>TableServer</AppName>
+    <Default_Server_Port>22001</Default_Server_Port>
+    <Buffer_Server_Port>0</Buffer_Server_Port>
+    <SocketPoolSize>1111</SocketPoolSize>
+    <Max_User>1000</Max_User>
+    <BackLog>10</BackLog>
+    <publicIpAddres>127.0.0.1</publicIpAddres>
+  </SERVER>
+
+  <!-- Thread Count -->
+  <!-- DBThreadCnt=10
+       UdpThreadCnt=1 -->
+  <LogThreadCnt>1</LogThreadCnt>
+
+  <!-- Queue Count -->
+  <CommandQueueCnt>1000</CommandQueueCnt>
+  <LogQueueCnt>1000</LogQueueCnt>
+  <WebQueueCnt>1000</WebQueueCnt>
+
+  <Client_OvPool>500</Client_OvPool>
+
+  <!-- LogFile Re Creation Set -->
+  <!-- exam 60 = 1 Hour -->
+  <LogReCreateMinute>720</LogReCreateMinute>
+
+  <!-- LOG_NONE = 0
+       LOG_INFO = 1,
+       LOG_TRACE = 2,
+       LOG_PACKET_TRACE = 3,
+       LOG_NOR = 4,
+       LOG_CRI = 5,
+       LOG_SYSTEM = 6,
+       0 to print all logs,
+       Only text logs of log levels equal to or higher than the configured log level will be saved. -->
+  <LogGrade>4</LogGrade>
+
+  <!-- UDPThread count depend on udpsockcount -->
+  <UDP>
+    <!-- UdpSockCount=0 -->
+  </UDP>
+
+  <!-- 게임서버간에는 마스터에는 커넥터를 두지 않는다. -->
+  <!-- 슬롯서버는 모든 게임서버에 커넥터를 두도록 한다. -->
+  <CONNECTOR>
+    <LOBBY>
+      <ServerIP>127.0.0.1</ServerIP>
+      <ServerPort>22002</ServerPort>
+    </LOBBY>
+    <!-- 
+    <SLOT> 
+      <ServerIP>127.0.0.1</ServerIP> 
+      <ServerPort>32001</ServerPort> 
+    </SLOT> -->
+  </CONNECTOR>
+  
+  <SERVERINFO>
+    <!-- Flag.h 의 E_SERVER_TYPE 참고. FRONT_SERVER, LOBBY_SERVER, SLOT_SERVER -->
+    <SERVERTYPE>LOBBY_SERVER</SERVERTYPE>
+    <!-- 서버 아이디 -->
+    <SERVERTID>3</SERVERTID>
+    <USECONSOLE>1</USECONSOLE>
+    <!-- 슬랙 온 = 1 -->
+    <USESLACK>0</USESLACK>
+    <SERVERSTAGE>LOCAL</SERVERSTAGE>
+    <REGION>KR</REGION>
+    <PINBALLVERSION>14611</PINBALLVERSION>
+  </SERVERINFO>
+
+  <GAMESERVER>
+    <NumberOfRoomsPerThread>100</NumberOfRoomsPerThread>
+  </GAMESERVER>
+
+  <CHATROOMINFO>
+    <MaxChatUser>200</MaxChatUser>
+    <!-- MaxChatRoom = 1000 -->
+    <ServerKeyHint>CHANGE_ME</ServerKeyHint>
+  </CHATROOMINFO>
+
+  <GAMEWEB>
+    <WebDNS>localhost</WebDNS>
+    <WebPort>35582</WebPort>
+    <Controller>Game</Controller>
+    <Action>ServerRequest</Action>
+  </GAMEWEB>
+
+  <VERSION>
+    <SERVER_VERSION>0.0.0.0</SERVER_VERSION>
+  </VERSION>
+
+  <REDIS>
+    <!-- Make sure to use the existing Redis port for Rank -->
+    <RedisPort>6379</RedisPort>
+    <RedisDns>127.0.0.1</RedisDns>
+  </REDIS>
+
+  <GAME_DB>
+    <!-- 차후 리스트로 변경할 예정 -->
+    <DB_HOST>127.0.0.1</DB_HOST>
+    <DB_PORT>33306</DB_PORT>
+    <DB_USER>mimic</DB_USER>
+    <DB_PASS>CHANGE_ME</DB_PASS>
+    <DB_NAME>tpp</DB_NAME>
+  </GAME_DB>
+
+  <LOGDB>
+    <DB_HOST>127.0.0.1</DB_HOST>
+    <DB_PORT>33306</DB_PORT>
+    <DB_USER>mimic</DB_USER>
+    <DB_PASS>CHANGE_ME</DB_PASS>
+    <DB_NAME>log</DB_NAME>
+  </LOGDB>
+
+  <ACCOUNT_DB>
+    <DB_HOST>127.0.0.1</DB_HOST>
+    <DB_PORT>33306</DB_PORT>
+    <DB_USER>mimic</DB_USER>
+    <DB_PASS>CHANGE_ME</DB_PASS>
+    <DB_NAME>account</DB_NAME>
+  </ACCOUNT_DB>
+</Configuration>

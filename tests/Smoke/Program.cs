@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Buffers.Binary;
 using System.Net.Sockets;
@@ -35,7 +36,7 @@ await second.RequestAsync(new Envelope { Authenticate = new AuthenticateRequest 
 await ExpectError(stranger, new Envelope { Authenticate = new AuthenticateRequest { SessionToken = a.SessionToken } });
 Check(true, "Duplicate session rejected");
 var lobby = await first.RequestAsync(new Envelope { ListTables = new Empty() });
-Check(lobby.Lobby.Tables.Count == 1 && lobby.Lobby.Tables[0].Capacity == 6, "Holdem-only lobby");
+Check(lobby.Lobby.Tables.Count >= 1 && lobby.Lobby.Tables.All(t => t.Capacity == 6), "Holdem-only lobby");
 await ExpectError(first, new Envelope { JoinTable = new JoinTableRequest { TableId = 999 } });
 TableSnapshot left = null, right = null;
 first.Received += e => { if (e.Snapshot != null) left = e.Snapshot; };

@@ -1,21 +1,12 @@
-param([string]$VcpkgRoot = "C:\vcpkg", [string]$CMake = "cmake")
+param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug', [string]$VcpkgRoot = "C:\vcpkg")
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-if (!(Get-Command $CMake -ErrorAction SilentlyContinue)) {
-    $CMake = 'C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
-}
-$CMake = (Get-Command $CMake -ErrorAction Stop).Source
 & "$PSScriptRoot\Generate-Protocol.ps1" -VcpkgRoot $VcpkgRoot
-& dotnet build "$repo\Server\Mimic.sln" -c Release
-if ($LASTEXITCODE -ne 0) { throw '.NET build failed.' }
-& $CMake -S $repo -B "$repo\build" -A x64 "-DCMAKE_TOOLCHAIN_FILE=$VcpkgRoot\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
-if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed.' }
-& $CMake --build "$repo\build" --config Release --parallel
-if ($LASTEXITCODE -ne 0) { throw 'C++ build failed.' }
-& (Join-Path (Split-Path $CMake -Parent) 'ctest.exe') --test-dir "$repo\build" -C Release --output-on-failure
-if ($LASTEXITCODE -ne 0) { throw 'C++ tests failed.' }
+& "$PSScriptRoot\Build-TableServer.ps1" -Configuration $Configuration
+& dotnet build "$repo\Server\Mimic.sln" -c Release --nologo
+if ($LASTEXITCODE -ne 0) { throw '.NET services build failed.' }
 & "$PSScriptRoot\Sync-UnityDependencies.ps1"
-New-Item -ItemType Directory -Force "$repo\artifacts" | Out-Null
-& dotnet run --project "$repo\tests\AccountTests\Mimic.AccountTests.csproj" -c Release --no-build > "$repo\artifacts\account-tests.log"
-if ($LASTEXITCODE -ne 0) { Get-Content "$repo\artifacts\account-tests.log" -Tail 35; throw 'Account tests failed.' }
-Get-Content "$repo\artifacts\account-tests.log" -Tail 3
+& dotnet run --project "$repo\tests\TableServerClient\Mimic.TableServerClient.Tests.csproj" -c Release
+if ($LASTEXITCODE -ne 0) { throw 'TableServer client protocol tests failed.' }
+& dotnet run --project "$repo\tests\AccountTests\Mimic.AccountTests.csproj" -c Release --no-build
+if ($LASTEXITCODE -ne 0) { throw 'Account service tests failed.' }

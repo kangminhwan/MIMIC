@@ -1,0 +1,19 @@
+# 백업 파일 (proto 단계별 백업)
+*.bak
+
+# 임시 파일
+*.tmp
+*.swp
+*~
+
+# 한글 파일명 복사본 (협업 시 혼란 방지 — 필요 시 개별 commit)
+*복사본*.proto
+*복사본.proto
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vs/
+.vscode/

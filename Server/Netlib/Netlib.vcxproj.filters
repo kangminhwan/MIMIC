@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="01. Common">
+      <UniqueIdentifier>{8538a60a-f4cc-4475-acc7-655a9b9e05c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. IOCP">
+      <UniqueIdentifier>{2f5ca044-39f1-477a-ae86-ead6ce74e0ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\01. PacketAnalyzer">
+      <UniqueIdentifier>{164778d4-cac5-4d5f-88fe-f21ea8290009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Manager">
+      <UniqueIdentifier>{14888751-fabe-427f-b482-25243a3c0b52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. MiniDump">
+      <UniqueIdentifier>{342ff74f-508b-4d72-ab92-a61f9977ee65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. UdpModule">
+      <UniqueIdentifier>{d42b012a-aeb1-482b-8d1c-3299d5248dd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06. Queue">
+      <UniqueIdentifier>{0fa409e9-d82b-4fcb-aabf-277ea6c04beb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\02. Interface">
+      <UniqueIdentifier>{2618ba27-c345-446c-a09c-324141ae5efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07. Session">
+      <UniqueIdentifier>{5c51c131-4191-4edb-810f-9da4a01ed6e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="08. Buffer">
+      <UniqueIdentifier>{bad34cab-ce50-4ba5-8a3f-ffde38222811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\03. Header">
+      <UniqueIdentifier>{4780677c-22e0-4381-af2e-df086728b3ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09. Network">
+      <UniqueIdentifier>{6a507962-3c27-47c1-b8a0-80acb6dfea45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09. Network\01. Packet">
+      <UniqueIdentifier>{cc34e3a3-0cd3-4d2f-9231-f2be805fa5f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09. Network\02. ContextPooler">
+      <UniqueIdentifier>{20cd6378-7538-4499-90d7-2546e671b860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09. Network\03. Socket">
+      <UniqueIdentifier>{d5fc9536-e7b5-45d9-bb58-bd55806a2415}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="10. Thread">
+      <UniqueIdentifier>{414cb3f8-944e-471a-abfb-320041639b9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="11. Scheduler">
+      <UniqueIdentifier>{6d82613d-afdf-4d0c-80de-2ff2d114acb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="12. ResourceMonitor">
+      <UniqueIdentifier>{f8b5d3e1-13bf-494f-b016-b6466e877437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="13. FileLoader">
+      <UniqueIdentifier>{4226cf57-38ff-4c01-99c5-c54d26a21be2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\04. Singleton">
+      <UniqueIdentifier>{ef400389-11ec-480a-8e4f-567350ab69bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. IOCP\02. Context">
+      <UniqueIdentifier>{49d8ec8c-9a78-4ef9-a0a4-a5270f254ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. IOCP\03. Overlapped">
+      <UniqueIdentifier>{b620aecb-8d45-4c02-9780-effa2ff6f8f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. IOCP\01. Connector">
+      <UniqueIdentifier>{51c4e138-d880-423c-a22e-a762212ac544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="14. WinInet">
+      <UniqueIdentifier>{2bbb0d38-9875-4b54-9065-ab53baa1e50a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\05. AllocHook">
+      <UniqueIdentifier>{aee05d82-9085-44c2-bc50-1b61837ee460}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="15. RestSdkHttp">
+      <UniqueIdentifier>{a8bf499d-20aa-440a-9d92-60082be1df6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="16. Timer">
+      <UniqueIdentifier>{50fda0b9-ea1b-4a14-9cad-0aba63a56273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="17. Asm">
+      <UniqueIdentifier>{aba88b64-cc7a-4c07-833d-ba33ad089bdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Common\06. Algorithm">
+      <UniqueIdentifier>{9f515f06-c2de-41f6-951c-232d523ccaba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="18. Redis">
+      <UniqueIdentifier>{98eb8ef5-ada1-4489-8add-611317a8cfda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="19. Alert">
+      <UniqueIdentifier>{12369f44-6116-4801-90cb-b0d4f5fcb9d9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\Netlib\Common\cPacketAnalyzer.h">
+      <Filter>01. Common\01. PacketAnalyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cInterfaceDlgSendMessage.h">
+      <Filter>01. Common\02. Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cInterfaceIocpContext.h">
+      <Filter>01. Common\02. Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cInterfaceLog.h">
+      <Filter>01. Common\02. Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cInterfacePacketParser.h">
+      <Filter>01. Common\02. Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cHeader.h">
+      <Filter>01. Common\03. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cUdpHeader.h">
+      <Filter>01. Common\03. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cSingleton.h">
+      <Filter>01. Common\04. Singleton</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\AllocHook.h">
+      <Filter>01. Common\05. AllocHook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\_Define.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cCriticalSection.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cMemPooler.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cSRWLock_CriticalSection.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\Flag.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\includeHeader.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\Macro.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\Netlib.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\Structure.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\Utility.h">
+      <Filter>01. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Buffer\cBuffer.h">
+      <Filter>08. Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cIocp.h">
+      <Filter>02. IOCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cIocpConnector.h">
+      <Filter>02. IOCP\01. Connector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cIocpContext.h">
+      <Filter>02. IOCP\02. Context</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cIocpOv.h">
+      <Filter>02. IOCP\03. Overlapped</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cOverlapped.h">
+      <Filter>02. IOCP\03. Overlapped</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\IOCP\cSocket.h">
+      <Filter>02. IOCP\02. Context</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\cCommandQueueManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\cLogManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\cSessionManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\cThreadManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\ServerManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\MiniDump\cMiniDump.h">
+      <Filter>04. MiniDump</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUdpSocket.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cIocpUDP.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUDPDispatcher.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUDPIOCompletionData.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUDPIocpOv.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUDPSession.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\UdpModule\cUDPSessionManager.h">
+      <Filter>05. UdpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cBaseQueueElement.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cCommandQueue.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cCommandQueueElement.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cIocpQueue.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cLogQueue.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cLogQueueElement.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cWebQueue.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Queue\cWebQueueElement.h">
+      <Filter>06. Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Session\cSession.h">
+      <Filter>07. Session</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Network\cNetWork.h">
+      <Filter>09. Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Network\cContextPooler.h">
+      <Filter>09. Network\02. ContextPooler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Network\cDisPatcher.h">
+      <Filter>09. Network\01. Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Network\cPacketStack.h">
+      <Filter>09. Network\01. Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Network\cServerSocket.h">
+      <Filter>09. Network\03. Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cBaseThread.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cCommandThread.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cLogThread.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cWebThread.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cWorkerThread.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Scheduler\cScheduler.h">
+      <Filter>11. Scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\ResourceMonitor\cResourceInfo.h">
+      <Filter>12. ResourceMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\FileLoader\cIniFileLoader.h">
+      <Filter>13. FileLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\FileLoader\csvFileLoader.h">
+      <Filter>13. FileLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\WinInet\cWinInet.h">
+      <Filter>14. WinInet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\RestSdkHttp\restsdkHttp.h">
+      <Filter>15. RestSdkHttp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Timer\cTimer.h">
+      <Filter>16. Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cPool.h">
+      <Filter>01. Common\06. Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cSkipList.h">
+      <Filter>01. Common\06. Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Common\cVector.h">
+      <Filter>01. Common\06. Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Redis\cRedisManager.h">
+      <Filter>18. Redis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Manager\cWebServerManager.h">
+      <Filter>03. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Alert\cInterfaceAlert.h">
+      <Filter>19. Alert</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Netlib\Thread\cThreadPool.h">
+      <Filter>10. Thread</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="IOCP\cIocp.cpp">
+      <Filter>02. IOCP</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP\cSocket.cpp">
+      <Filter>02. IOCP\02. Context</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP\cIocpOv.cpp">
+      <Filter>02. IOCP\03. Overlapped</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP\cOverlapped.cpp">
+      <Filter>02. IOCP\03. Overlapped</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\ServerManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniDump\cMiniDump.cpp">
+      <Filter>04. MiniDump</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUdpSocket.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUDPIocpOv.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUDPSession.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUDPSessionManager.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUDPIOCompletionData.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cUDPDispatcher.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpModule\cIocpUDP.cpp">
+      <Filter>05. UdpModule</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cBaseQueueElement.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cIocpQueue.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cCommandQueueElement.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cCommandQueue.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\cCommandQueueManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cLogQueueElement.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cLogQueue.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer\cBuffer.cpp">
+      <Filter>08. Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Session\cSession.cpp">
+      <Filter>07. Session</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\cSessionManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\cPacketStack.cpp">
+      <Filter>09. Network\01. Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\cContextPooler.cpp">
+      <Filter>09. Network\02. ContextPooler</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\cNetWork.cpp">
+      <Filter>09. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\cServerSocket.cpp">
+      <Filter>09. Network\03. Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cBaseThread.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cCommandThread.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cLogThread.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\cLogManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cWorkerThread.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\cThreadManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Scheduler\cScheduler.cpp">
+      <Filter>11. Scheduler</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceMonitor\cResourceInfo.cpp">
+      <Filter>12. ResourceMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="FileLoader\cIniFileLoader.cpp">
+      <Filter>13. FileLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\cDisPatcher.cpp">
+      <Filter>09. Network\01. Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="FileLoader\csvFileLoader.cpp">
+      <Filter>13. FileLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="WinInet\cWinInet.cpp">
+      <Filter>14. WinInet</Filter>
+    </ClCompile>
+    <ClCompile Include="RestSdkHttp\restsdkHttp.cpp">
+      <Filter>15. RestSdkHttp</Filter>
+    </ClCompile>
+    <ClCompile Include="UnityBuilder1.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cWebThread.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cWebQueueElement.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue\cWebQueue.cpp">
+      <Filter>06. Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer\cTimer.cpp">
+      <Filter>16. Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP\cIocpConnector.cpp">
+      <Filter>02. IOCP\01. Connector</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCP\cIocpContext.cpp">
+      <Filter>02. IOCP\02. Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Redis\cRedisManager.cpp">
+      <Filter>18. Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\cWebServerManager.cpp">
+      <Filter>03. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cThreadPool.cpp">
+      <Filter>10. Thread</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Asm\StackPointerX86.asm">
+      <Filter>17. Asm</Filter>
+    </MASM>
+    <MASM Include="Asm\StackPointerX64.asm">
+      <Filter>17. Asm</Filter>
+    </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
